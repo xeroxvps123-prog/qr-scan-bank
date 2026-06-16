@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Bank Updater · Camera Focus</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js">
+  </script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: #f4f7fc;
+      padding: 20px;
+      color: #1e293b;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+    .flex-between {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #0f172a;
+    }
+    h1 small {
+      font-weight: 400;
+      font-size: 16px;
+      color: #64748b;
+      margin-left: 12px;
+    }
+    .badge {
+      background: #e2e8f0;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      background: #eef2f6;
+      color: #1e293b;
+      transition: all 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+    .btn-success {
+      background: #16a34a;
+      color: #fff;
+    }
+    .btn-success:hover {
+      background: #15803d;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+    }
+    .btn-warning {
+      background: #eab308;
+      color: #0f172a;
+    }
+    .btn-warning:hover {
+      background: #ca8a04;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(234, 179, 8, 0.35);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #cbd5e1;
+    }
+    .btn-outline:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .file-input-wrap {
+      position: relative;
+    }
+    .file-input-wrap input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 12px;
+      border-radius: 14px;
+      border: 1px solid #e9edf2;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      min-width: 600px;
+    }
+    th {
+      background: #f8fafc;
+      text-align: left;
+      padding: 14px 16px;
+      font-weight: 600;
+      color: #475569;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eef2f6;
+      vertical-align: middle;
+    }
+    tr:hover td {
+      background: #fafcff;
+    }
+    tr.selected td {
+      background: #dbeafe;
+      box-shadow: inset 0 0 0 2px #2563eb;
+    }
+    .tr-empty td {
+      padding: 40px 16px;
+      text-align: center;
+      color: #94a3b8;
+    }
+    .account-cell {
+      font-family: 'Courier New', monospace;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .account-filled {
+      color: #16a34a;
+    }
+    .account-missing {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    .status-msg {
+      padding: 12px 18px;
+      border-radius: 12px;
+      background: #f1f5f9;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .status-msg.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status-msg.error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .status-msg.info {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .qr-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: stretch;
+    }
+    .qr-preview {
+      flex: 0 0 220px;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 2px dashed #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      min-height: 200px;
+      text-align: center;
+    }
+    .qr-preview video {
+      width: 100%;
+      border-radius: 10px;
+      background: #000;
+      min-height: 180px;
+      object-fit: cover;
+    }
+    .qr-preview .placeholder {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .qr-controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 240px;
+    }
+    .manual-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .manual-input input {
+      flex: 1;
+      min-width: 180px;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+      font-family: 'Courier New', monospace;
+    }
+    .manual-input input:focus {
+      border-color: #2563eb;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 14px;
+      color: #475569;
+    }
+    .stats span {
+      background: #f1f5f9;
+      padding: 4px 14px;
+      border-radius: 30px;
+    }
+    .stats strong {
+      color: #0f172a;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #475569;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      max-width: 420px;
+      padding: 16px 24px;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #f8fafc;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      font-size: 14px;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 999;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success {
+      background: #16a34a;
+    }
+    .toast.error {
+      background: #dc2626;
+    }
+    @media (max-width: 700px) {
+      .card {
+        padding: 16px;
+      }
+      .flex-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .qr-preview {
+        flex: 1 1 auto;
+      }
+      .btn {
+        justify-content: center;
+      }
+    }
+    pre {
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .protocol-warning {
+      background: #fef9c3;
+      border-left: 4px solid #eab308;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #854d0e;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .protocol-warning strong {
+      color: #b45309;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="flex-between" style="margin-bottom:16px;">
+      <h1>
+        📷 QR Bank Updater <small>Camera First</small>
+      </h1>
+      <div class="stats">
+        <span>📄 <strong id="rowCount">0</strong> employees</span>
+        <span>✅ <strong id="filledCount">0</strong> filled</span>
+        <span>⬜ <strong id="missingCount">0</strong> missing</span>
+      </div>
+    </div>
+
+    <!-- PROTOCOL WARNING -->
+    <div id="protocolWarning" class="protocol-warning hidden">
+      ⚠️ <span>Your page is not served over <strong>HTTPS</strong> or <strong>localhost</strong>. Most browsers <strong>block camera access</strong> on insecure origins. Please use <strong>VS Code Live Server</strong> or upload to a secure site. <br> <span style="font-size:13px; color:#854d0e;">👉 You can still use <strong>"Scan Image"</strong> to upload QR photos.</span></span>
+    </div>
+
+    <!-- DATA CARD -->
+    <div class="card">
+      <div class="flex-row">
+        <div class="file-input-wrap">
+          <button class="btn btn-primary">📂 Load Excel</button>
+          <input type="file" id="fileInput" accept=".xlsx,.xls" />
+        </div>
+        <button class="btn btn-outline" id="btnRefresh">🔄 Refresh</button>
+        <button class="btn btn-success" id="btnSave">💾 Download Excel</button>
+        <button class="btn btn-primary" id="btnSyncSheets">🔗 Sync to Sheets</button>
+        <button class="btn btn-warning" id="btnTestWebApp">🧪 Test Web App</button>
+        <button class="btn btn-danger" id="btnClear">🗑️ Clear All</button>
+        <button class="btn btn-outline" id="btnLoadStorage">💾 Load Storage</button>
+        <span id="fileName" class="badge">No file</span>
+      </div>
+      <div class="flex-row" style="margin-top:14px;">
+        <div class="status-msg info" id="statusBar">
+          <span>ℹ️</span> Load an Excel file or restore from storage.
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="autoStartCheck" checked />
+          <label for="autoStartCheck">Auto‑start camera</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="padding:0 0 8px 0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>S.NO</th>
+              <th>EMP CODE</th>
+              <th>NAME</th>
+              <th>Mobile</th>
+              <th>Account Number</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr class="tr-empty"><td colspan="5">No data</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:12px 16px 4px; font-size:13px; color:#94a3b8;">
+        💡 Click a row to select. Camera auto‑starts if checkbox is on.
+      </div>
+    </div>
+
+    <!-- QR SCAN CARD -->
+    <div class="card">
+      <div class="qr-section">
+        <div class="qr-preview" id="qrPreview">
+          <div id="qrPlaceholder" class="placeholder">
+            <div style="font-size:48px; margin-bottom:8px;">📷</div>
+            <div>Camera preview</div>
+            <div style="font-size:12px; color:#94a3b8;">Select an employee to start</div>
+          </div>
+          <video id="qrVideo" style="display:none;"></video>
+        </div>
+
+        <div class="qr-controls">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btnStartCamera">📷 Start Camera</button>
+            <button class="btn btn-danger" id="btnStopCamera" disabled>⏹ Stop</button>
+            <button class="btn btn-success" id="btnScanImage">🖼️ Scan Image</button>
+            <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+          </div>
+
+          <div class="manual-input">
+            <input type="text" id="manualAccount" placeholder="Or type account number…" />
+            <button class="btn btn-success" id="btnApplyManual">✏️ Apply</button>
+          </div>
+
+          <div id="qrStatus" class="status-msg info">
+            <span>📡</span> Ready — select an employee first.
+          </div>
+
+          <div id="cameraHelp" class="hidden" style="background:#e0f2fe; padding:10px 14px; border-radius:8px; font-size:13px; color:#0c4a6e; border-left:4px solid #0284c7; margin-top:4px;">
+            <strong>🔧 Camera troubleshooting:</strong><br>
+            • Ensure you're using <strong>HTTPS</strong> or <strong>localhost</strong>.<br>
+            • Click the camera icon in the address bar and <strong>allow</strong> camera access.<br>
+            • If still failing, use <strong>"Scan Image"</strong> to upload a QR photo.
+          </div>
+
+          <div style="font-size:13px; color:#64748b; display:flex; gap:16px; flex-wrap:wrap;">
+            <span>📍 Selected: <strong id="selectedDisplay">—</strong></span>
+            <span>📦 QR data: <strong id="qrDataDisplay">—</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOOGLE SHEETS GUIDE -->
+    <div class="card" style="background:#f8fafc; border:1px solid #e2e8f0;">
+      <div style="font-size:14px; color:#475569; display:flex; gap:16px; flex-wrap:wrap; align-items:center;">
+        <span>🔗 <strong>Google Sheets Integration</strong></span>
+        <button class="btn btn-outline" id="btnGSheetGuide">📖 Show script</button>
+      </div>
+      <div id="gsheetGuide" class="hidden" style="margin-top:12px; padding:12px; background:#fff; border-radius:12px; border:1px solid #e2e8f0; font-size:14px; line-height:1.6;">
+        <p><strong>Apps Script (copy & deploy):</strong></p>
+        <pre>
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var payload = JSON.parse(e.postData.contents);
+  var updates = payload;
+  var range = sheet.getDataRange();
+  var values = range.getValues();
+  var updated = 0;
+  for (var i = 1; i < values.length; i++) {
+    var empCode = String(values[i][1]);
+    for (var j = 0; j < updates.length; j++) {
+      if (String(updates[j].empCode) === empCode) {
+        sheet.getRange(i + 1, 5).setValue(updates[j].account);
+        updated++;
+        break;
+      }
+    }
+  }
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, updated: updated }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+        </pre>
+        <p>Deploy as Web App (execute as Me, access: Anyone). Copy the URL.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ============================================================
+    //  STATE
+    // ============================================================
+    let workbookData = [];
+    let selectedIndex = -1;
+    let qrScanner = null;
+    let isScanning = false;
+    const STORAGE_KEY = 'bankQrData';
+
+    // DOM refs
+    const fileInput = document.getElementById('fileInput');
+    const imageInput = document.getElementById('imageInput');
+    const tableBody = document.getElementById('tableBody');
+    const fileName = document.getElementById('fileName');
+    const statusBar = document.getElementById('statusBar');
+    const qrStatus = document.getElementById('qrStatus');
+    const rowCount = document.getElementById('rowCount');
+    const filledCount = document.getElementById('filledCount');
+    const missingCount = document.getElementById('missingCount');
+    const selectedDisplay = document.getElementById('selectedDisplay');
+    const qrDataDisplay = document.getElementById('qrDataDisplay');
+    const manualAccount = document.getElementById('manualAccount');
+    const autoStartCheck = document.getElementById('autoStartCheck');
+    const qrVideo = document.getElementById('qrVideo');
+    const qrPlaceholder = document.getElementById('qrPlaceholder');
+    const cameraHelp = document.getElementById('cameraHelp');
+    const protocolWarning = document.getElementById('protocolWarning');
+
+    const btnRefresh = document.getElementById('btnRefresh');
+    const btnSave = document.getElementById('btnSave');
+    const btnSyncSheets = document.getElementById('btnSyncSheets');
+    const btnTestWebApp = document.getElementById('btnTestWebApp');
+    const btnClear = document.getElementById('btnClear');
+    const btnLoadStorage = document.getElementById('btnLoadStorage');
+    const btnStartCamera = document.getElementById('btnStartCamera');
+    const btnStopCamera = document.getElementById('btnStopCamera');
+    const btnScanImage = document.getElementById('btnScanImage');
+    const btnApplyManual = document.getElementById('btnApplyManual');
+    const btnGSheetGuide = document.getElementById('btnGSheetGuide');
+
+    // ============================================================
+    //  PROTOCOL CHECK
+    // ============================================================
+    function checkProtocol() {
+      const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (!isSecure) {
+        protocolWarning.classList.remove('hidden');
+        setStatus('⚠️ Camera may be blocked. Please use HTTPS or localhost.', 'error');
+      } else {
+        protocolWarning.classList.add('hidden');
+      }
+      return isSecure;
+    }
+
+    // ============================================================
+    //  TOAST
+    // ============================================================
+    let toastTimer = null;
+
+    function showToast(msg, type = 'info') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast ' + type;
+      clearTimeout(toastTimer);
+      void el.offsetWidth;
+      el.classList.add('show');
+      toastTimer = setTimeout(() => el.classList.remove('show'), 5000);
+    }
+
+    // ============================================================
+    //  STATUS
+    // ============================================================
+    function setStatus(msg, type = 'info') {
+      statusBar.className = 'status-msg ' + type;
+      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '📌';
+      statusBar.innerHTML = `<span>${icon}</span> ${msg}`;
+    }
+
+    function setQrStatus(msg, type = 'info') {
+      qrStatus.className = 'status-msg ' + type;
+      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? '📡' : '📌';
+      qrStatus.innerHTML = `<span>${icon}</span> ${msg}`;
+    }
+
+    function updateStats() {
+      const total = workbookData.length;
+      const filled = workbookData.filter(r => r.account && r.account.trim() !== '').length;
+      rowCount.textContent = total;
+      filledCount.textContent = filled;
+      missingCount.textContent = total - filled;
+    }
+
+    // ============================================================
+    //  LOCAL STORAGE
+    // ============================================================
+    function saveToStorage() {
+      if (workbookData.length) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(workbookData));
+        localStorage.setItem('bankQrFileName', fileName.textContent);
+      }
+    }
+
+    function loadFromStorage() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data && data.length) {
+            workbookData = data;
+            const fn = localStorage.getItem('bankQrFileName') || 'stored_data.xlsx';
+            fileName.textContent = fn;
+            selectedIndex = -1;
+            renderTable();
+            setStatus(`Restored ${workbookData.length} employees.`, 'success');
+            showToast(`💾 Restored ${workbookData.length} records`, 'success');
+            return true;
+          }
+        } catch (e) { console.warn(e); }
+      }
+      return false;
+    }
+
+    // ============================================================
+    //  RENDER TABLE
+    // ============================================================
+    function renderTable() {
+      if (!workbookData.length) {
+        tableBody.innerHTML = `<tr class="tr-empty"><td colspan="5">No data loaded</td></tr>`;
+        updateStats();
+        return;
+      }
+      let html = '';
+      workbookData.forEach((row, idx) => {
+        const sel = idx === selectedIndex ? 'selected' : '';
+        const acc = row.account || '';
+        const accDisplay = acc ? `<span class="account-cell account-filled">${acc}</span>` :
+          `<span class="account-cell account-missing">—</span>`;
+        html += `
+                <tr class="${sel}" data-index="${idx}">
+                    <td>${row.sno || ''}</td>
+                    <td><strong>${row.empCode || ''}</strong></td>
+                    <td>${row.name || ''}</td>
+                    <td>${row.mobile || ''}</td>
+                    <td>${accDisplay}</td>
+                </tr>
+            `;
+      });
+      tableBody.innerHTML = html;
+
+      document.querySelectorAll('#tableBody tr[data-index]').forEach(tr => {
+        tr.addEventListener('click', function() {
+          const idx = parseInt(this.dataset.index);
+          selectRow(idx);
+        });
+      });
+
+      updateStats();
+      updateSelectedDisplay();
+      if (workbookData.length) saveToStorage();
+    }
+
+    function selectRow(idx) {
+      if (idx < 0 || idx >= workbookData.length) {
+        selectedIndex = -1;
+        renderTable();
+        return;
+      }
+      selectedIndex = idx;
+      renderTable();
+      const emp = workbookData[idx];
+      setStatus(`Selected: ${emp.empCode} — ${emp.name}`, 'info');
+      setQrStatus(`Ready — scan QR for ${emp.empCode}`, 'info');
+      manualAccount.value = emp.account || '';
+      if (autoStartCheck.checked && !isScanning) {
+        startCamera();
+      }
+      const rows = document.querySelectorAll('#tableBody tr');
+      if (rows[idx]) rows[idx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    function updateSelectedDisplay() {
+      if (selectedIndex >= 0 && selectedIndex < workbookData.length) {
+        const r = workbookData[selectedIndex];
+        selectedDisplay.textContent = `${r.empCode} — ${r.name}`;
+      } else {
+        selectedDisplay.textContent = '—';
+      }
+    }
+
+    // ============================================================
+    //  LOAD EXCEL
+    // ============================================================
+    function loadExcelFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array', cellDates: false });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+          if (!json || json.length === 0) {
+            setStatus('Empty file.', 'error');
+            return;
+          }
+          const headers = Object.keys(json[0]);
+          const findCol = (pattern) => {
+            const lower = pattern.toLowerCase();
+            for (let h of headers) {
+              if (h.toLowerCase().includes(lower)) return h;
+            }
+            return null;
+          };
+          const colSno = findCol('sno') || findCol('serial') || findCol('no') || headers[0];
+          const colEmp = findCol('emp code') || findCol('empcode') || findCol('employee') || findCol('code');
+          const colName = findCol('name') || findCol('employee name') || findCol('full name');
+          const colMobile = findCol('mobile') || findCol('phone') || findCol('contact');
+          const colAcc = findCol('account') || findCol('acc no') || findCol('account no') || findCol('accnumber');
+
+          if (!colEmp) {
+            setStatus('Column "EMP CODE" not found.', 'error');
+            return;
+          }
+
+          workbookData = json.map((row, i) => ({
+            sno: row[colSno] || (i + 1),
+            empCode: String(row[colEmp] || '').trim(),
+            name: String(row[colName] || '').trim(),
+            mobile: String(row[colMobile] || '').trim(),
+            account: String(row[colAcc] || '').trim(),
+            _raw: row,
+            _colAcc: colAcc,
+          })).filter(r => r.empCode !== '');
+
+          if (workbookData.length === 0) {
+            setStatus('No rows with EMP CODE.', 'error');
+            return;
+          }
+
+          fileName.textContent = file.name;
+          selectedIndex = -1;
+          renderTable();
+          setStatus(`Loaded ${workbookData.length} employees.`, 'success');
+          showToast(`✅ Loaded ${workbookData.length} employees`, 'success');
+          saveToStorage();
+
+        } catch (err) {
+          console.error(err);
+          setStatus('Error: ' + err.message, 'error');
+          showToast('❌ Failed to read Excel', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ============================================================
+    //  SAVE EXCEL
+    // ============================================================
+    function saveExcel() {
+      if (!workbookData.length) {
+        showToast('No data to save.', 'error');
+        return;
+      }
+      const outRows = workbookData.map(r => {
+        const newRow = { ...r._raw };
+        if (r._colAcc && r.account !== undefined) {
+          newRow[r._colAcc] = r.account;
+        }
+        return newRow;
+      });
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(outRows);
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const name = fileName.textContent.includes('.') ? fileName.textContent.replace(/\.[^.]+$/, '') : 'bank_details';
+      a.download = `${name}_updated.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('💾 Excel downloaded!', 'success');
+      setStatus('Downloaded updated Excel.', 'success');
+    }
+
+    // ============================================================
+    //  SYNC TO GOOGLE SHEETS
+    // ============================================================
+    async function syncToSheets(url) {
+      if (!workbookData.length) {
+        showToast('No data to sync.', 'error');
+        return false;
+      }
+      const payload = workbookData.map(r => ({
+        empCode: r.empCode,
+        account: r.account || ''
+      }));
+
+      setStatus('Sending sync request...', 'info');
+      showToast('⏳ Syncing...', 'info');
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (response.ok) {
+          const result = await response.json();
+          setStatus(`✅ Synced! Updated ${result.updated || '?'} rows.`, 'success');
+          showToast(`✅ Synced ${result.updated || '?'} rows`, 'success');
+          return true;
+        } else {
+          throw new Error('CORS failed');
+        }
+      } catch (err) {
+        try {
+          await fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          setStatus('⚠️ Sync sent (no-cors). Check your sheet manually.', 'info');
+          showToast('✅ Sync request sent (no-cors).', 'success');
+          return true;
+        } catch (e2) {
+          console.error('Sync error:', e2);
+          setStatus('❌ Sync failed: ' + e2.message, 'error');
+          showToast('❌ Sync failed', 'error');
+          return false;
+        }
+      }
+    }
+
+    // ============================================================
+    //  TEST WEB APP
+    // ============================================================
+    async function testWebApp() {
+      const url = prompt('📎 Paste your Web App URL to test:', '');
+      if (!url) return;
+      try {
+        setStatus('Testing connection...', 'info');
+        const testPayload = [{ empCode: 'TEST', account: '12345' }];
+        const response = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(testPayload)
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setStatus(`✅ Web App reachable! Response: ${JSON.stringify(data)}`, 'success');
+          showToast('✅ Web App test passed', 'success');
+        } else {
+          setStatus(`⚠️ Web App responded with status ${response.status}.`, 'error');
+          showToast('⚠️ Web App test failed', 'error');
+        }
+      } catch (err) {
+        try {
+          await fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify([{ empCode: 'TEST', account: '12345' }])
+          });
+          setStatus('⚠️ Web App URL valid (no-cors). Check your sheet manually.', 'info');
+          showToast('Web App URL is valid (no-cors).', 'success');
+        } catch (e2) {
+          setStatus('❌ Web App unreachable: ' + e2.message, 'error');
+          showToast('❌ Web App test failed', 'error');
+        }
+      }
+    }
+
+    // ============================================================
+    //  CLEAR / REFRESH
+    // ============================================================
+    function clearAccounts() {
+      if (!workbookData.length) return;
+      if (!confirm('Clear all account numbers?')) return;
+      workbookData.forEach(r => r.account = '');
+      renderTable();
+      setStatus('Cleared all accounts.', 'info');
+      showToast('🗑️ Cleared all accounts', 'info');
+    }
+
+    function refreshView() {
+      renderTable();
+      setStatus('Refreshed.', 'info');
+      showToast('🔄 Refreshed', 'info');
+    }
+
+    // ============================================================
+    //  UPDATE ACCOUNT
+    // ============================================================
+    function updateSelectedAccount(value) {
+      const val = String(value).trim();
+      if (selectedIndex < 0 || selectedIndex >= workbookData.length) {
+        setQrStatus('No employee selected.', 'error');
+        showToast('⚠️ Select an employee first', 'error');
+        return false;
+      }
+      if (!val) {
+        setQrStatus('Account cannot be empty.', 'error');
+        return false;
+      }
+      if (!/^\d+$/.test(val)) {
+        setQrStatus('Only digits allowed.', 'error');
+        showToast('⚠️ Account must be numeric', 'error');
+        return false;
+      }
+      workbookData[selectedIndex].account = val;
+      renderTable();
+      setQrStatus(`✅ Updated ${workbookData[selectedIndex].empCode}`, 'success');
+      setStatus(`Account updated for ${workbookData[selectedIndex].empCode}`, 'success');
+      showToast(`✅ Account updated`, 'success');
+      manualAccount.value = val;
+      saveToStorage();
+      return true;
+    }
+
+    // ============================================================
+    //  CAMERA – with precise error handling
+    // ============================================================
+    async function startCamera() {
+      if (isScanning) {
+        showToast('Camera already running.', 'info');
+        return;
+      }
+
+      if (selectedIndex < 0) {
+        setQrStatus('⚠️ Select an employee first.', 'error');
+        showToast('⚠️ Select an employee first', 'error');
+        return;
+      }
+
+      // Check protocol
+      const isSecure = checkProtocol();
+      if (!isSecure) {
+        cameraHelp.classList.remove('hidden');
+        setQrStatus('❌ Camera blocked: page not served over HTTPS/localhost.', 'error');
+        showToast('Camera unavailable – use HTTPS or localhost', 'error');
+        return;
+      }
+
+      // Check if camera is available
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const hasCamera = devices.some(d => d.kind === 'videoinput');
+        if (!hasCamera) {
+          setQrStatus('❌ No camera found. Use "Scan Image" instead.', 'error');
+          showToast('No camera detected', 'error');
+          cameraHelp.classList.remove('hidden');
+          return;
+        }
+      } catch (e) {
+        // enumerateDevices may fail in some browsers; we'll still try to start
+        console.warn('enumerateDevices failed:', e);
+      }
+
+      try {
+        qrPlaceholder.style.display = 'none';
+        qrVideo.style.display = 'block';
+        qrVideo.style.width = '100%';
+        qrVideo.style.height = 'auto';
+        qrVideo.style.minHeight = '180px';
+        qrVideo.style.background = '#000';
+        qrVideo.style.borderRadius = '10px';
+        qrVideo.style.objectFit = 'cover';
+
+        const html5QrCode = new Html5Qrcode('qrVideo');
+        qrScanner = html5QrCode;
+
+        await html5QrCode.start(
+          { facingMode: 'environment' },
+          {
+            fps: 15,
+            qrbox: { width: 200, height: 200 },
+            aspectRatio: 1.0
+          },
+          onScanSuccess,
+          onScanError
+        );
+
+        isScanning = true;
+        btnStartCamera.disabled = true;
+        btnStopCamera.disabled = false;
+        setQrStatus('📷 Scanning... Point at QR code', 'success');
+        showToast('📷 Camera started', 'success');
+        cameraHelp.classList.add('hidden');
+
+      } catch (err) {
+        console.error('Camera start error:', err);
+        qrPlaceholder.style.display = 'flex';
+        qrVideo.style.display = 'none';
+        cameraHelp.classList.remove('hidden');
+
+        let msg = '';
+        if (err.message && err.message.includes('Permission')) {
+          msg = '❌ Camera permission denied. Please allow camera access in browser settings.';
+        } else if (err.message && err.message.includes('NotFound')) {
+          msg = '❌ No camera found. Use "Scan Image" instead.';
+        } else if (err.message && err.message.includes('NotAllowed')) {
+          msg = '❌ Camera access blocked. Click the camera icon in address bar and allow.';
+        } else if (err.message && err.message.includes('NotReadable')) {
+          msg = '❌ Camera is busy. Close other apps using the camera.';
+        } else {
+          msg = '❌ Unknown error. Try using "Scan Image" or reload the page.';
+        }
+        setQrStatus(msg, 'error');
+        showToast('Camera error: ' + msg, 'error');
+      }
+    }
+
+    function onScanSuccess(decodedText) {
+      if (isScanning) {
+        handleQrData(decodedText);
+        setTimeout(() => stopCamera(), 800);
+      }
+    }
+
+    function onScanError(err) {
+      // ignore – continuous
+    }
+
+    function stopCamera() {
+      if (qrScanner) {
+        try {
+          qrScanner.stop()
+            .then(() => {
+              qrScanner.clear();
+              qrScanner = null;
+              isScanning = false;
+              btnStartCamera.disabled = false;
+              btnStopCamera.disabled = true;
+              qrPlaceholder.style.display = 'flex';
+              qrVideo.style.display = 'none';
+              setQrStatus('Camera stopped.', 'info');
+              showToast('⏹ Camera stopped', 'info');
+            })
+            .catch(err => {
+              console.warn('Stop error:', err);
+              forceStop();
+            });
+        } catch (e) {
+          forceStop();
+        }
+      } else {
+        forceStop();
+      }
+    }
+
+    function forceStop() {
+      isScanning = false;
+      btnStartCamera.disabled = false;
+      btnStopCamera.disabled = true;
+      qrPlaceholder.style.display = 'flex';
+      qrVideo.style.display = 'none';
+    }
+
+    // ============================================================
+    //  QR DATA HANDLER
+    // ============================================================
+    function handleQrData(text) {
+      qrDataDisplay.textContent = text.length > 40 ? text.slice(0, 40) + '…' : text;
+      setQrStatus(`📦 QR scanned: ${text.length} chars`, 'info');
+
+      let account = '';
+      if (/^\d{6,20}$/.test(text.trim())) {
+        account = text.trim();
+      } else {
+        const patterns = [
+          /ACCOUNT\s*[:=]\s*(\d+)/i,
+          /ACC\s*[:=]\s*(\d+)/i,
+          /A\/C\s*[:=]\s*(\d+)/i,
+          /ACCT\s*[:=]\s*(\d+)/i,
+          /AC\s*[:=]\s*(\d+)/i,
+          /ACCOUNT\s+NO\s*[:=]\s*(\d+)/i,
+          /ACC\s+NO\s*[:=]\s*(\d+)/i,
+          /ACCOUNT\s+NUMBER\s*[:=]\s*(\d+)/i,
+          /[#]?(\d{6,20})/,
+        ];
+        for (let pat of patterns) {
+          const m = text.match(pat);
+          if (m) { account = m[1]; break; }
+        }
+        if (!account) {
+          const digits = text.match(/\d{6,20}/);
+          if (digits) account = digits[0];
+        }
+      }
+
+      if (account) {
+        updateSelectedAccount(account);
+        showToast(`✅ Account ${account} saved`, 'success');
+      } else {
+        setQrStatus('⚠️ No account number found in QR.', 'error');
+        showToast('⚠️ No account in QR', 'error');
+      }
+    }
+
+    // ============================================================
+    //  SCAN IMAGE
+    // ============================================================
+    function scanImageFile(file) {
+      if (selectedIndex < 0) {
+        setQrStatus('Select an employee first.', 'error');
+        showToast('⚠️ Select an employee', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const html5QrCode = new Html5Qrcode('dummy');
+          html5QrCode.scanFile(file, true)
+            .then(decodedText => handleQrData(decodedText))
+            .catch(err => {
+              setQrStatus('No QR in image: ' + err, 'error');
+              showToast('❌ No QR found in image', 'error');
+            });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ============================================================
+    //  EVENT BINDINGS
+    // ============================================================
+
+    fileInput.addEventListener('change', function(e) {
+      if (this.files && this.files[0]) {
+        loadExcelFile(this.files[0]);
+      }
+      this.value = '';
+    });
+
+    btnRefresh.addEventListener('click', refreshView);
+    btnSave.addEventListener('click', saveExcel);
+
+    btnSyncSheets.addEventListener('click', function() {
+      const url = prompt('📎 Paste your Web App URL:', '');
+      if (url) syncToSheets(url);
+    });
+
+    btnTestWebApp.addEventListener('click', testWebApp);
+
+    btnClear.addEventListener('click', clearAccounts);
+    btnLoadStorage.addEventListener('click', function() {
+      if (!loadFromStorage()) {
+        showToast('No stored data found.', 'error');
+      }
+    });
+
+    btnStartCamera.addEventListener('click', startCamera);
+    btnStopCamera.addEventListener('click', stopCamera);
+
+    btnScanImage.addEventListener('click', function() { imageInput.click(); });
+    imageInput.addEventListener('change', function(e) {
+      if (this.files && this.files[0]) {
+        scanImageFile(this.files[0]);
+      }
+      this.value = '';
+    });
+
+    btnApplyManual.addEventListener('click', function() {
+      updateSelectedAccount(manualAccount.value);
+    });
+
+    manualAccount.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') btnApplyManual.click();
+    });
+
+    btnGSheetGuide.addEventListener('click', function() {
+      const guide = document.getElementById('gsheetGuide');
+      guide.classList.toggle('hidden');
+      this.textContent = guide.classList.contains('hidden') ? '📖 Show script' : '📖 Hide script';
+    });
+
+    autoStartCheck.addEventListener('change', function() {
+      if (!this.checked && isScanning) {
+        stopCamera();
+      }
+    });
+
+    // ============================================================
+    //  INIT – check protocol on load
+    // ============================================================
+    checkProtocol();
+
+    if (!loadFromStorage()) {
+      setStatus('Load an Excel file to begin.', 'info');
+      showToast('👋 Load an Excel file or restore from storage', 'info');
+    } else {
+      showToast('💾 Data restored from storage', 'success');
+    }
+
+    console.log('✅ QR Bank Updater with camera debugging ready');
+  </script>
+</body>
+</html>
