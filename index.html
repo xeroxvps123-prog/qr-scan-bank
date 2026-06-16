@@ -1250,7 +1250,9 @@ function doPost(e) {
       if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
-    // ── Update Account (with robust error handling) ──
+    // ───────────────────────────────────────────────────────────
+    //  FIXED SYNC FUNCTION (with fallback & clear errors)
+    // ───────────────────────────────────────────────────────────
     async function updateAccountAndSync(val, autoNext = false) {
       val = String(val).trim();
       if (selectedIndex < 0) { toast('Select an employee first', 'error'); return false; }
@@ -1260,16 +1262,20 @@ function doPost(e) {
       const emp = workbookData[selectedIndex];
       const empCode = emp.empCode;
 
-      // Optimistic UI update
+      // Optimistic update
       emp.account = val;
       renderTable();
       setQrStatus(`⏳ Saving ${empCode} → ${val}...`, 'info');
 
       try {
+        // Validate URL
+        if (!sheetUrl) throw new Error('No Web App URL connected. Please fetch data first.');
+
         // Build URL with sheet parameter
         const url = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
 
-        const response = await fetch(url, {
+        // First try CORS
+        let response = await fetch(url, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
@@ -1277,19 +1283,19 @@ function doPost(e) {
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          // If CORS fails, try no-cors as a fallback (we won't get a response but the data will be sent)
+          if (response.status === 0 || response.type === 'opaque') {
+            throw new Error('CORS blocked – trying no‑cors fallback');
+          }
+          throw new Error(`HTTP ${response.status}`);
         }
 
         const result = await response.json();
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
+        if (result.error) throw new Error(result.error);
         if (result.success) {
           setQrStatus(`✅ Saved: ${empCode} → ${val}`, 'success');
           setStatus(`Account synced to Google Sheets.`, 'success');
           toast(`✅ ${empCode}: ${val} synced`, 'success');
-
           if (autoNext) {
             setTimeout(() => {
               const next = workbookData.findIndex((r, i) => i > selectedIndex && (!r.account || !r.account.trim()));
@@ -1302,22 +1308,51 @@ function doPost(e) {
         }
 
       } catch (err) {
-        console.error('Sync error:', err);
-        // Rollback
+        console.warn('Sync error:', err);
+
+        // If CORS failed, try no-cors as last resort
+        if (err.message.includes('CORS') || err.message.includes('no-cors')) {
+          try {
+            const urlNoCors = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
+            await fetch(urlNoCors, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ empCode, account: val })
+            });
+            // Since no-cors gives opaque response, we assume success and ask user to verify
+            setQrStatus(`⚠️ Sync sent (no‑cors). Please check your sheet.`, 'warn');
+            setStatus(`Sync sent – please verify in Google Sheets.`, 'warn');
+            toast(`⚠️ ${empCode}: sync sent but cannot confirm – check your sheet.`, 'warn');
+            // Keep the optimistic update
+            return true;
+          } catch (e2) {
+            // Both attempts failed
+            emp.account = ''; // rollback
+            renderTable();
+            const msg = 'Cannot reach Google Sheets. Check your URL, sheet name, and internet connection.';
+            setQrStatus('❌ ' + msg, 'error');
+            toast('❌ ' + msg, 'error');
+            return false;
+          }
+        }
+
+        // Other errors – rollback
         emp.account = '';
         renderTable();
-        const friendlyMsg = err.message.includes('Failed to fetch') ?
-          'Cannot reach Google Sheets. Check URL, sheet name, and internet connection.' :
-          err.message;
-        setQrStatus('❌ Sync failed: ' + friendlyMsg, 'error');
-        toast('❌ ' + friendlyMsg, 'error');
+        let userMsg = err.message || 'Unknown error';
+        if (userMsg.includes('Failed to fetch')) {
+          userMsg = 'Cannot reach the server. Check your URL and network.';
+        }
+        setQrStatus('❌ Sync failed: ' + userMsg, 'error');
+        toast('❌ ' + userMsg, 'error');
         return false;
       }
     }
 
-    // ════════════════════════════════════════
-    // ADVANCED SCANNER ENGINE
-    // ════════════════════════════════════════
+    // ───────────────────────────────────────────────────────────
+    //  ADVANCED SCANNER ENGINE (unchanged – works great)
+    // ───────────────────────────────────────────────────────────
 
     async function openScanner(idx) {
       scanTargetIndex = (idx !== undefined) ? idx : selectedIndex;
@@ -1334,7 +1369,6 @@ function doPost(e) {
 
       stopScanner();
 
-      // Check for native BarcodeDetector
       if ('BarcodeDetector' in window) {
         try {
           barcodeDetector = new BarcodeDetector({
@@ -1352,7 +1386,6 @@ function doPost(e) {
         }
       }
 
-      // Fallback to html5-qrcode
       if (typeof Html5Qrcode !== 'undefined') {
         console.log('🔄 Using html5-qrcode fallback.');
         await startHtml5Scanner();
@@ -1363,7 +1396,6 @@ function doPost(e) {
       toast('Please use Chrome or Edge for best barcode scanning.', 'error');
     }
 
-    // ── Native Scanner ──
     async function startNativeScanner() {
       const video = $('scannerVideo');
       const constraints = {
@@ -1377,7 +1409,6 @@ function doPost(e) {
         setScannerStatus('Scanning...', 'info');
         isScanning = true;
 
-        // Use requestVideoFrameCallback for low-latency
         if ('requestVideoFrameCallback' in video) {
           function scanFrame() {
             if (!isScanning) return;
@@ -1415,7 +1446,6 @@ function doPost(e) {
       } catch (e) { /* ignore */ }
     }
 
-    // ── HTML5-QRCODE Fallback ──
     async function startHtml5Scanner() {
       const video = $('scannerVideo');
       try {
@@ -1444,9 +1474,7 @@ function doPost(e) {
       }
     }
 
-    // ── Handle Scanned Data ──
     function handleScanned(text) {
-      // Debounce rapid duplicate scans
       if (text === lastDetectedText && detectionCount > 0) {
         detectionCount++;
         if (detectionCount < 3) return;
@@ -1454,13 +1482,9 @@ function doPost(e) {
       lastDetectedText = text;
       detectionCount = 0;
 
-      // Stop scanning immediately
       stopScanner();
-
-      // Close scanner after brief delay
       setTimeout(() => closeScanner(), 400);
 
-      // Extract account number
       let acc = '';
       const t = text.trim();
       if (/^\d{6,20}$/.test(t)) {
@@ -1496,7 +1520,6 @@ function doPost(e) {
       }
     }
 
-    // ── Stop Scanner ──
     function stopScanner() {
       isScanning = false;
       if (frameCallbackId) {
@@ -1522,7 +1545,6 @@ function doPost(e) {
       detectionCount = 0;
     }
 
-    // ── Close Scanner ──
     function closeScanner() {
       stopScanner();
       $('scannerOverlay').classList.remove('active');
@@ -1673,21 +1695,26 @@ function doPost(e) {
       }
     }
 
-    // ════════════════════════════════════════
-    // EVENT BINDINGS
-    // ════════════════════════════════════════
-
-    // Connect / fetch
-    $('btnFetch').addEventListener('click', fetchSheetData);
+    // ── Test Web App ──
     $('btnTest').addEventListener('click', async () => {
       const url = $('sheetUrl').value.trim();
       if (!url) { toast('Enter URL first', 'error'); return; }
       try {
-        const r = await fetch(url, { method: 'GET' });
-        if (r.ok) toast('✅ URL reachable', 'success');
-        else throw new Error();
-      } catch { toast('❌ Could not reach URL', 'error'); }
+        const testUrl = url + (url.includes('?') ? '&' : '?') + 'sheet=Sheet1';
+        const r = await fetch(testUrl);
+        if (r.ok) {
+          const data = await r.json();
+          toast('✅ URL reachable – sheet accessible!', 'success');
+        } else {
+          throw new Error('HTTP ' + r.status);
+        }
+      } catch (e) {
+        toast('❌ Could not reach URL: ' + e.message, 'error');
+      }
     });
+
+    // ── Event bindings ──
+    $('btnFetch').addEventListener('click', fetchSheetData);
     $('btnDisconn').addEventListener('click', () => {
       sheetUrl = '';
       sheetName = 'Sheet1';
@@ -1701,14 +1728,10 @@ function doPost(e) {
       toast('Disconnected', 'info');
     });
 
-    // Manual apply
     $('btnApply').addEventListener('click', () => updateAccountAndSync($('manualAccount').value, true));
     $('manualAccount').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnApply').click(); });
-
-    // Open scanner
     $('btnOpenScanner').addEventListener('click', () => openScanner(selectedIndex));
 
-    // Scanner controls
     $('scannerClose').addEventListener('click', closeScanner);
     $('scannerImageInput').addEventListener('change', e => {
       const f = e.target.files[0];
@@ -1718,10 +1741,8 @@ function doPost(e) {
     $('scannerFlash').addEventListener('click', toggleFlash);
     $('scannerScanNow').addEventListener('click', manualScanFrame);
 
-    // Search
     $('searchInput').addEventListener('input', renderTable);
 
-    // Guide
     $('btnGuide').addEventListener('click', () => {
       const b = $('guideBody');
       const a = $('guideArrow');
@@ -1747,7 +1768,7 @@ function doPost(e) {
       $('syncStatus').style.display = 'none';
     }
 
-    console.log('✅ Advanced Barcode Scanner ready.');
+    console.log('✅ Advanced Barcode Scanner with robust sync ready.');
   </script>
 </body>
 </html>
