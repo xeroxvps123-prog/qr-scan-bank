@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>QR Bank Updater · Google Sheets</title>
+  <title>QR/Barcode Bank Updater · Google Sheets</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
     :root {
@@ -106,10 +106,11 @@
     .scanner-finder::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:40px;background:rgba(59,91,219,.9);animation:scanLine 1.5s ease-in-out infinite}
     @keyframes scanLine{0%,100%{top:0}50%{top:calc(100% - 40px)}}
     .scanner-status{bottom:40px;left:0;right:0;text-align:center;pointer-events:auto;color:rgba(255,255,255,.8);font-size:14px;font-weight:500;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+    .scanner-status .detected-format{font-size:12px;opacity:.7;margin-top:4px}
     .scanner-footer{display:flex;gap:12px;justify-content:center;pointer-events:auto;margin-top:12px}
     .scanner-footer .btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(4px);pointer-events:auto}
     .scanner-footer .btn:hover{background:rgba(255,255,255,.25)}
-
+    .scanner-footer .btn:active{transform:scale(.95)}
     @media(max-width:600px){.scanner-finder{width:180px;height:180px}}
   </style>
 </head>
@@ -117,7 +118,7 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="brand"><div class="brand-icon">🏦</div>QR Bank Updater</div>
+  <div class="brand"><div class="brand-icon">🏦</div>QR/Barcode Updater</div>
   <div class="chips">
     <div class="chip">Total: <strong id="stTotal">0</strong></div>
     <div class="chip" style="background:rgba(15,153,96,.3)">✓ <strong id="stFilled">0</strong></div>
@@ -224,7 +225,7 @@ function doPost(e) {
           <div class="fl">
             <label class="fl-label">Account Number</label>
             <div class="ig">
-              <input type="text" class="input input-mono" id="manualAccount" placeholder="Scan QR or type here…"/>
+              <input type="text" class="input input-mono" id="manualAccount" placeholder="Scan QR/Barcode or type here…"/>
               <button class="btn btn-primary" id="btnOpenCam">📷 Scan</button>
             </div>
           </div>
@@ -265,7 +266,7 @@ function doPost(e) {
       </table>
     </div>
     <div style="padding:9px 14px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);background:var(--surface2)">
-      💡 Click a row to select. Tap <strong>📷 Scan</strong> to open full‑screen QR scanner.
+      💡 Click a row to select. Tap <strong>📷 Scan</strong> to open full‑screen scanner.
     </div>
   </div>
 </div>
@@ -275,16 +276,18 @@ function doPost(e) {
   <video id="scannerVideo" autoplay playsinline muted></video>
   <div class="scanner-ui">
     <div class="scanner-top">
-      <div class="scanner-title" id="scannerTitle">Scan QR</div>
+      <div class="scanner-title" id="scannerTitle">Scan QR/Barcode</div>
       <button class="scanner-close" id="scannerClose">✕</button>
     </div>
     <div class="scanner-finder"></div>
     <div class="scanner-status">
-      <div id="scannerStatusText">Position QR code in the center</div>
+      <div id="scannerStatusText">Position code in the center</div>
+      <div class="detected-format" id="detectedFormat"></div>
       <div class="scanner-footer">
         <button class="btn btn-sm" id="scannerFlash">💡 Flash</button>
         <button class="btn btn-sm" id="scannerImage">🖼️ Image</button>
         <input type="file" id="scannerImageInput" accept="image/*" style="display:none"/>
+        <button class="btn btn-sm" id="scannerScanNow">📸 Scan Now</button>
       </div>
     </div>
   </div>
@@ -306,6 +309,8 @@ let barcodeDetector = null;
 let scanTargetIndex = -1;
 let scannerActive = false;
 let frameCallback = null;
+let lastDetectedText = '';
+let detectionCount = 0;
 const UKEY = 'bankQrUrl';
 const SNAMEKEY = 'bankQrSheetName';
 
@@ -372,7 +377,7 @@ function renderTable() {
         <td>${row.name}</td>
         <td style="font-family:var(--mono);font-size:12px">${row.mobile}</td>
         <td>${accHtml}</td>
-        <td>${badge} <button class="scan-acc-btn" data-scan="${ri}" title="Scan QR for this employee">📷 Scan</button></td>
+        <td>${badge} <button class="scan-acc-btn" data-scan="${ri}" title="Scan QR/Barcode for this employee">📷 Scan</button></td>
       </tr>`;
     }).join('');
 
@@ -440,7 +445,6 @@ async function updateAccountAndSync(val, autoNext=false) {
         setQrStatus(`✅ Saved: ${empCode} → ${val}`, 'success');
         setStatus(`Account synced to Google Sheets.`, 'success');
         toast(`✅ ${empCode}: ${val} synced`, 'success');
-        // Update local data again (in case sheet has other changes)
         if (autoNext) {
           setTimeout(() => {
             const next = workbookData.findIndex((r,i)=>i>selectedIndex&&(!r.account||!r.account.trim()));
@@ -466,7 +470,7 @@ async function updateAccountAndSync(val, autoNext=false) {
 }
 
 // ───────────────────────────────────────────────────────────
-//  FAST QR SCANNER (requestVideoFrameCallback + BarcodeDetector)
+//  SUPER-FAST QR/BARCODE SCANNER
 // ───────────────────────────────────────────────────────────
 
 async function openScanner(idx) {
@@ -479,12 +483,29 @@ async function openScanner(idx) {
   scannerActive = true;
   
   $('scannerTitle').textContent = `Scan for ${workbookData[scanTargetIndex].empCode}`;
-  $('scannerStatusText').textContent = 'Position QR code in the center';
+  $('scannerStatusText').textContent = 'Position code in the center';
+  $('detectedFormat').textContent = '';
   
-  // Init BarcodeDetector – only QR for speed
+  // Init BarcodeDetector with ALL common formats
   if (window.BarcodeDetector) {
     try {
-      barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+      barcodeDetector = new BarcodeDetector({
+        formats: [
+          'qr_code',
+          'code_128',
+          'code_39',
+          'code_93',
+          'codabar',
+          'ean_13',
+          'ean_8',
+          'itf',
+          'upc_a',
+          'upc_e',
+          'pdf417',
+          'aztec',
+          'data_matrix'
+        ]
+      });
     } catch(e){ barcodeDetector=null; }
   }
   
@@ -547,7 +568,11 @@ async function detectFrame(video) {
     try {
       const results = await barcodeDetector.detect(video);
       if (results.length > 0) {
-        const text = results[0].rawValue;
+        const result = results[0];
+        const text = result.rawValue;
+        // Show format name
+        const formatName = result.format || 'Code';
+        $('detectedFormat').textContent = `Detected: ${formatName}`;
         handleScanned(text);
         return;
       }
@@ -558,22 +583,30 @@ async function detectFrame(video) {
   if (window.jsQR) {
     const canvas = $('scannerCanvas');
     const ctx = canvas.getContext('2d');
-    // Use a smaller resolution for speed
-    const scale = 0.5;
-    canvas.width = video.videoWidth * scale;
-    canvas.height = video.videoHeight * scale;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Use full resolution for barcode detection
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const code = jsQR(imageData.data, imageData.width, imageData.height, {
       inversionAttempts: 'dontInvert'
     });
     if (code && code.data) {
+      $('detectedFormat').textContent = 'Detected: QR Code (jsQR)';
       handleScanned(code.data);
     }
   }
 }
 
 function handleScanned(text) {
+  // Avoid duplicate scans
+  if (text === lastDetectedText && detectionCount > 0) {
+    detectionCount++;
+    if (detectionCount < 3) return; // require 3 consecutive detections
+  }
+  lastDetectedText = text;
+  detectionCount = 0;
+  
   stopScannerCamera();
   closeScanner();
   
@@ -599,8 +632,8 @@ function handleScanned(text) {
     $('manualAccount').value = acc;
     updateAccountAndSync(acc, true);
   } else {
-    toast(`QR scanned but no account found. Raw: ${text.substring(0,40)}`, 'error');
-    setQrStatus('No account number in QR. Try manual entry.','warn');
+    toast(`Scanned but no account found. Raw: ${text.substring(0,40)}`, 'error');
+    setQrStatus('No account number in code. Try manual entry.','warn');
     if (scanTargetIndex !== prevSel) selectRow(scanTargetIndex);
   }
 }
@@ -612,6 +645,8 @@ function stopScannerCamera() {
   if (mediaStream) { mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
   const v = $('scannerVideo');
   if (v) { v.srcObject=null; }
+  lastDetectedText = '';
+  detectionCount = 0;
 }
 
 function closeScanner() {
@@ -635,7 +670,9 @@ function scanImageFile(file) {
       let found = false;
       if (window.BarcodeDetector) {
         try {
-          const bd = new BarcodeDetector({formats:['qr_code']});
+          const bd = new BarcodeDetector({
+            formats: ['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','data_matrix','pdf417','aztec','itf']
+          });
           const res = await bd.detect(img);
           if (res.length>0) { handleScanned(res[0].rawValue); found=true; }
         } catch(e){}
@@ -646,13 +683,21 @@ function scanImageFile(file) {
         if (code && code.data) { handleScanned(code.data); found=true; }
       }
       if (!found) {
-        toast('No QR code found in image.','error');
-        $('scannerStatusText').textContent = 'No QR detected. Try another image.';
+        toast('No barcode/QR found in image.','error');
+        $('scannerStatusText').textContent = 'No code detected. Try another image.';
       }
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+// ── MANUAL SCAN BUTTON ──
+function manualScan() {
+  const video = $('scannerVideo');
+  if (video.readyState >= 2 && video.videoWidth > 0) {
+    detectFrame(video);
+  }
 }
 
 // ── LOAD jsQR ──
@@ -666,7 +711,7 @@ function loadJsQR() {
 loadJsQR();
 
 // ───────────────────────────────────────────────────────────
-//  GOOGLE SHEETS FETCH
+//  GOOGLE SHEETS FETCH (improved column detection)
 // ───────────────────────────────────────────────────────────
 
 async function fetchSheetData() {
@@ -690,23 +735,33 @@ async function fetchSheetData() {
     const headers = result.headers || [];
     const findCol = (patterns) => {
       for (let p of patterns) {
-        const idx = headers.findIndex(h => h.toLowerCase().includes(p));
+        const idx = headers.findIndex(h => h.toLowerCase().replace(/[^a-z0-9]/g, '').includes(p.replace(/[^a-z0-9]/g, '')));
         if (idx !== -1) return idx;
       }
       return -1;
     };
-    const empIdx = findCol(['emp code', 'empcode', 'employee code', 'emp_code']);
-    const nameIdx = findCol(['name', 'employee name', 'full name']);
-    const mobileIdx = findCol(['mobile', 'phone', 'contact']);
-    const accIdx = findCol(['account', 'acc no', 'account no', 'account number']);
-    if (empIdx === -1) { setStatus('Could not find "Emp Code" column.','error'); return; }
+    const empIdx = findCol(['empcode', 'emp code', 'employee code', 'employee']);
+    const nameIdx = findCol(['name', 'full name', 'employee name']);
+    const mobileIdx = findCol(['mobile', 'phone', 'contact', 'cell']);
+    // Account – broad search
+    let accIdx = findCol(['account', 'acc no', 'account no', 'account number', 'accnumber', 'acc', 'a/c', 'bank acc', 'bank account', 'acct', 'bank']);
+    if (accIdx === -1) {
+      accIdx = headers.findIndex(h => {
+        const low = h.toLowerCase();
+        return low.includes('acc') || low.includes('bank') || low.includes('acct') || low.includes('a/c');
+      });
+    }
+    if (empIdx === -1) { 
+      setStatus('Could not find "Emp Code" column.','error'); 
+      return; 
+    }
     
     workbookData = result.data.map((row, i) => ({
       sno: i+1,
       empCode: String(row[headers[empIdx]] || '').trim(),
-      name: String(row[headers[nameIdx]] || '').trim(),
-      mobile: String(row[headers[mobileIdx]] || '').trim(),
-      account: String(row[headers[accIdx]] || '').trim(),
+      name: (nameIdx !== -1) ? String(row[headers[nameIdx]] || '').trim() : '',
+      mobile: (mobileIdx !== -1) ? String(row[headers[mobileIdx]] || '').trim() : '',
+      account: (accIdx !== -1) ? String(row[headers[accIdx]] || '').trim() : '',
       _raw: row,
       _headers: headers
     })).filter(r=>r.empCode);
@@ -784,6 +839,8 @@ $('scannerFlash').addEventListener('click', ()=>{
     }
   }
 });
+// Manual scan button
+$('scannerScanNow').addEventListener('click', manualScan);
 
 // Search
 $('searchInput').addEventListener('input', renderTable);
