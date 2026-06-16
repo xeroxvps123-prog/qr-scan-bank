@@ -38,7 +38,6 @@
       color: var(--text);
       min-height: 100vh;
     }
-    /* ── Scrollbar ── */
     ::-webkit-scrollbar {
       width: 4px;
     }
@@ -49,8 +48,6 @@
       background: var(--accent);
       border-radius: 4px;
     }
-
-    /* ── Top Bar ── */
     .topbar {
       background: var(--accent);
       color: #fff;
@@ -92,8 +89,6 @@
       display: flex;
       gap: 6px;
     }
-
-    /* ── Layout ── */
     .layout {
       display: grid;
       grid-template-columns: 360px 1fr;
@@ -107,8 +102,6 @@
         grid-template-columns: 1fr;
       }
     }
-
-    /* ── Panels ── */
     .panel {
       background: var(--surface);
       border-radius: 16px;
@@ -132,8 +125,6 @@
     .pb {
       padding: 14px 16px;
     }
-
-    /* ── Buttons ── */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -201,8 +192,6 @@
       cursor: not-allowed;
       transform: none !important;
     }
-
-    /* ── Inputs ── */
     .input {
       width: 100%;
       padding: 9px 12px;
@@ -242,8 +231,6 @@
     .ig .input {
       flex: 1;
     }
-
-    /* ── Status Bars ── */
     .sbar {
       padding: 9px 13px;
       border-radius: 10px;
@@ -274,8 +261,6 @@
       border-color: #f5d98a;
       color: #7d5a00;
     }
-
-    /* ── Table ── */
     .table-wrap {
       overflow-x: auto;
       max-height: calc(100vh - 140px);
@@ -378,8 +363,6 @@
       color: #fff;
       transform: scale(1.05);
     }
-
-    /* ── Google Sheets Connect ── */
     .sheets-connected {
       background: var(--green-light);
       border-radius: 10px;
@@ -488,8 +471,6 @@
         opacity: .4;
       }
     }
-
-    /* ── Toast ── */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -526,9 +507,7 @@
       margin: 10px 0;
     }
 
-    /* ════════════════════════════════════════
-       ADVANCED FULL-SCREEN SCANNER UI
-       ════════════════════════════════════════ */
+    /* ── Scanner UI ── */
     #scannerOverlay {
       position: fixed;
       inset: 0;
@@ -542,8 +521,6 @@
     #scannerOverlay.active {
       display: flex;
     }
-
-    /* ── Scanner Header ── */
     .scanner-header {
       display: flex;
       justify-content: space-between;
@@ -583,8 +560,6 @@
     .scanner-close:hover {
       background: rgba(255, 255, 255, .18);
     }
-
-    /* ── Scanner Video ── */
     .scanner-video-wrap {
       flex: 1;
       position: relative;
@@ -599,8 +574,6 @@
       height: 100%;
       object-fit: cover;
     }
-
-    /* ── Scanner Overlay ── */
     .scanner-overlay-ui {
       position: absolute;
       inset: 0;
@@ -610,8 +583,6 @@
       align-items: center;
       justify-content: center;
     }
-
-    /* Scan Region */
     .scan-region {
       width: 70%;
       max-width: 280px;
@@ -619,31 +590,6 @@
       position: relative;
       border-radius: 20px;
       box-shadow: 0 0 0 4000px rgba(0, 0, 0, .45);
-    }
-    /* Border corners */
-    .scan-region::before,
-    .scan-region::after {
-      content: '';
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      border-color: #3b5bdb;
-      border-style: solid;
-      border-width: 0;
-    }
-    .scan-region::before {
-      top: -1px;
-      left: -1px;
-      border-top-width: 3px;
-      border-left-width: 3px;
-      border-radius: 4px 0 0 0;
-    }
-    .scan-region::after {
-      bottom: -1px;
-      right: -1px;
-      border-bottom-width: 3px;
-      border-right-width: 3px;
-      border-radius: 0 0 4px 0;
     }
     .scan-region .corner {
       position: absolute;
@@ -681,8 +627,6 @@
       border-right-width: 3px;
       border-radius: 0 0 4px 0;
     }
-
-    /* Scan Line */
     .scan-line {
       position: absolute;
       left: 10%;
@@ -702,8 +646,6 @@
         top: 88%;
       }
     }
-
-    /* ── Scanner Status ── */
     .scanner-status-area {
       position: absolute;
       bottom: 80px;
@@ -734,18 +676,36 @@
       color: #ff6b6b;
       border-color: rgba(255, 107, 107, .3);
     }
-    .scanner-status-text .format-badge {
-      display: inline-block;
-      padding: 1px 8px;
+    .scanner-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      padding: 12px 24px;
+      background: rgba(0, 0, 0, .65);
       border-radius: 12px;
-      font-size: 10px;
-      font-weight: 700;
-      background: rgba(59, 91, 219, .3);
-      color: #a8c2ff;
-      margin-left: 6px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .08);
+      display: none;
+      pointer-events: none;
+      max-width: 80%;
+      z-index: 5;
     }
-
-    /* ── Scanner Footer Controls ── */
+    .scanner-message.show {
+      display: block;
+    }
+    .scanner-message.error {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, .2);
+    }
+    .scanner-message.success {
+      color: #69db7c;
+      border-color: rgba(105, 219, 124, .2);
+    }
     .scanner-controls {
       display: flex;
       gap: 12px;
@@ -799,40 +759,6 @@
       cursor: pointer;
       width: 100%;
     }
-
-    /* ── Scanner Message ── */
-    .scanner-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      text-align: center;
-      padding: 12px 24px;
-      background: rgba(0, 0, 0, .65);
-      border-radius: 12px;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, .08);
-      display: none;
-      pointer-events: none;
-      max-width: 80%;
-      z-index: 5;
-    }
-    .scanner-message.show {
-      display: block;
-    }
-    .scanner-message.error {
-      color: #ff6b6b;
-      border-color: rgba(255, 107, 107, .2);
-    }
-    .scanner-message.success {
-      color: #69db7c;
-      border-color: rgba(105, 219, 124, .2);
-    }
-
-    /* ── Responsive ── */
     @media(max-width:600px) {
       .scan-region {
         width: 80%;
@@ -862,12 +788,9 @@
 </head>
 <body>
 
-  <!-- ═══ TOP BAR ═══ -->
+  <!-- TOP BAR -->
   <div class="topbar">
-    <div class="brand">
-      <div class="brand-icon">📷</div>
-      Barcode Updater
-    </div>
+    <div class="brand"><div class="brand-icon">📷</div>Barcode Updater</div>
     <div class="chips">
       <div class="chip">Total: <strong id="stTotal">0</strong></div>
       <div class="chip" style="background:rgba(15,153,96,.3)">✓ <strong id="stFilled">0</strong></div>
@@ -875,13 +798,13 @@
     </div>
   </div>
 
-  <!-- ═══ MAIN LAYOUT ═══ -->
+  <!-- LAYOUT -->
   <div class="layout">
 
     <!-- LEFT PANEL -->
     <div style="display:flex;flex-direction:column;gap:14px">
 
-      <!-- ── Google Sheets Connection ── -->
+      <!-- Google Sheets Connection -->
       <div class="panel">
         <div class="ph"><span>🔗 Google Sheets</span></div>
         <div class="pb">
@@ -908,7 +831,7 @@
             </div>
             <div class="btn-row">
               <button class="btn btn-primary btn-sm" id="btnFetch">📥 Fetch Data</button>
-              <button class="btn btn-ghost btn-sm" id="btnTest">🧪 Test</button>
+              <button class="btn btn-ghost btn-sm" id="btnTest">🔌 Test Connection</button>
             </div>
           </div>
           <div class="sbar info" id="syncStatus" style="margin-top:10px;display:none">
@@ -922,7 +845,7 @@
               <li>Paste the script (see below) and save</li>
               <li><strong>Deploy → New Deployment → Web App</strong></li>
               <li>Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong></li>
-              <li>Copy URL and paste above → Fetch Data</li>
+              <li>Copy URL and paste above → Test → Fetch Data</li>
             </ol>
             <pre class="code-block">function doGet(e) {
   var sheetName = e.parameter.sheet || 'Sheet1';
@@ -962,7 +885,7 @@ function doPost(e) {
         </div>
       </div>
 
-      <!-- ── Active Employee ── -->
+      <!-- Active Employee -->
       <div class="panel">
         <div class="ph"><span>📷 Active Employee</span></div>
         <div class="pb">
@@ -976,7 +899,6 @@ function doPost(e) {
               <div style="font-size:16px;font-weight:700;color:var(--accent)" id="selEmpName">—</div>
               <div style="font-size:12px;color:var(--text2);margin-top:2px" id="selEmpCode">—</div>
             </div>
-
             <div class="fl">
               <label class="fl-label">Account Number</label>
               <div class="ig">
@@ -984,11 +906,9 @@ function doPost(e) {
                 <button class="btn btn-primary" id="btnOpenScanner">📷 Scan</button>
               </div>
             </div>
-
             <div class="btn-row">
               <button class="btn btn-success btn-full" id="btnApply">✅ Save to Sheet</button>
             </div>
-
             <div class="sbar info" id="qrStatus" style="margin-top:10px">
               <span>📡</span><span id="qrStatusText">Select an employee and tap Scan.</span>
             </div>
@@ -1008,14 +928,7 @@ function doPost(e) {
       <div class="table-wrap" style="flex:1">
         <table>
           <thead>
-            <tr>
-              <th style="width:44px">S.No</th>
-              <th>Emp Code</th>
-              <th>Name</th>
-              <th>Mobile</th>
-              <th>Account</th>
-              <th style="width:80px">Action</th>
-            </tr>
+            <tr><th style="width:44px">S.No</th><th>Emp Code</th><th>Name</th><th>Mobile</th><th>Account</th><th style="width:80px">Action</th></tr>
           </thead>
           <tbody id="tableBody">
             <tr class="tr-empty"><td colspan="6">Connect to Google Sheets and fetch data.</td></tr>
@@ -1023,68 +936,48 @@ function doPost(e) {
         </table>
       </div>
       <div style="padding:9px 14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--surface2)">
-        💡 Click a row to select. Tap <strong>📷 Scan</strong> to open the advanced barcode scanner.
+        💡 Click a row to select. Tap <strong>📷 Scan</strong> to open the barcode scanner.
       </div>
     </div>
 
   </div>
 
-  <!-- ═══ ADVANCED FULL-SCREEN SCANNER ═══ -->
+  <!-- FULL SCREEN SCANNER -->
   <div id="scannerOverlay">
-    <!-- Header -->
     <div class="scanner-header">
-      <div class="title">
-        🔍 Scan Barcode
-        <span class="emp-code" id="scannerEmpCode"></span>
-      </div>
+      <div class="title">🔍 Scan Barcode <span class="emp-code" id="scannerEmpCode"></span></div>
       <button class="scanner-close" id="scannerClose">✕</button>
     </div>
-
-    <!-- Video -->
     <div class="scanner-video-wrap">
       <video id="scannerVideo" autoplay playsinline muted></video>
       <canvas id="scannerCanvas" style="display:none;"></canvas>
-
-      <!-- Overlay UI -->
       <div class="scanner-overlay-ui">
         <div class="scan-region">
-          <span class="corner tl"></span>
-          <span class="corner tr"></span>
-          <span class="corner bl"></span>
-          <span class="corner br"></span>
+          <span class="corner tl"></span><span class="corner tr"></span>
+          <span class="corner bl"></span><span class="corner br"></span>
           <div class="scan-line"></div>
         </div>
         <div class="scanner-status-area">
           <div class="scanner-status-text" id="scannerStatus">Position barcode in the center</div>
         </div>
       </div>
-
-      <!-- Floating message -->
       <div class="scanner-message" id="scannerMessage"></div>
     </div>
-
-    <!-- Controls -->
     <div class="scanner-controls">
-      <button class="btn" id="scannerFlash">
-        <span class="icon">💡</span> Flash
-      </button>
+      <button class="btn" id="scannerFlash"><span class="icon">💡</span> Flash</button>
       <div class="file-wrap">
-        <button class="btn">
-          <span class="icon">🖼️</span> Image
-        </button>
+        <button class="btn"><span class="icon">🖼️</span> Image</button>
         <input type="file" id="scannerImageInput" accept="image/*"/>
       </div>
-      <button class="btn btn-primary" id="scannerScanNow">
-        <span class="icon">📸</span> Scan Now
-      </button>
+      <button class="btn btn-primary" id="scannerScanNow"><span class="icon">📸</span> Scan Now</button>
     </div>
   </div>
 
-  <!-- ═══ TOAST ═══ -->
+  <!-- TOAST -->
   <div id="toast"></div>
 
   <script>
-    // ── Load external script helper ──
+    // ── Load html5-qrcode fallback ──
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -1094,26 +987,16 @@ function doPost(e) {
         document.head.appendChild(script);
       });
     }
-
-    // ── Load html5-qrcode for fallback ──
     async function loadBarcodeLib() {
-      if ('BarcodeDetector' in window) {
-        console.log('✅ Native BarcodeDetector available.');
-        return;
-      }
-      console.log('⚠️ Loading html5-qrcode fallback...');
+      if ('BarcodeDetector' in window) return;
       try {
         await loadScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js');
         console.log('✅ html5-qrcode loaded.');
-      } catch (e) {
-        console.error('❌ Failed to load html5-qrcode:', e);
-      }
+      } catch (e) { console.error('❌ Failed to load html5-qrcode:', e); }
     }
     loadBarcodeLib();
 
-    // ════════════════════════════════════════
-    // STATE
-    // ════════════════════════════════════════
+    // ── STATE ──
     let workbookData = [];
     let selectedIndex = -1;
     let sheetUrl = '';
@@ -1128,8 +1011,6 @@ function doPost(e) {
     let frameCallbackId = null;
     const UKEY = 'bankQrUrl';
     const SNAMEKEY = 'bankQrSheetName';
-
-    // ── DOM helpers ──
     const $ = id => document.getElementById(id);
 
     // ── Toast ──
@@ -1151,20 +1032,17 @@ function doPost(e) {
       $('syncText').textContent = msg;
       el.querySelector('span').textContent = icons[type] || 'ℹ️';
     }
-
     function setQrStatus(msg, type = 'info') {
       const icons = { success: '✅', error: '❌', info: '📡', warn: '⚠️' };
       $('qrStatus').className = 'sbar ' + type;
       $('qrStatusText').textContent = msg;
       $('qrStatus').querySelector('span').textContent = icons[type] || '📡';
     }
-
     function setScannerStatus(msg, type = 'info') {
       const el = $('scannerStatus');
       el.textContent = msg;
       el.className = 'scanner-status-text' + (type === 'success' ? ' detected' : type === 'error' ? ' error' : '');
     }
-
     function showScannerMessage(msg, type = 'info') {
       const el = $('scannerMessage');
       el.textContent = msg;
@@ -1172,10 +1050,7 @@ function doPost(e) {
       clearTimeout(el._hide);
       el._hide = setTimeout(() => el.classList.remove('show'), 3000);
     }
-
-    function hideScannerMessage() {
-      $('scannerMessage').className = 'scanner-message';
-    }
+    function hideScannerMessage() { $('scannerMessage').className = 'scanner-message'; }
 
     // ── Stats ──
     function updateStats() {
@@ -1189,23 +1064,15 @@ function doPost(e) {
     // ── Render Table ──
     function renderTable() {
       const term = ($('searchInput').value || '').toLowerCase().trim();
-      const rows = term ?
-        workbookData.filter(r => r.empCode.toLowerCase().includes(term) || r.name.toLowerCase().includes(term) || r.mobile.includes(term)) :
-        workbookData;
-
+      const rows = term ? workbookData.filter(r => r.empCode.toLowerCase().includes(term) || r.name.toLowerCase().includes(term) || r.mobile.includes(term)) : workbookData;
       if (!rows.length) {
-        $('tableBody').innerHTML =
-          `<tr class="tr-empty"><td colspan="6">${term ? 'No matches.' : 'No data loaded. Connect to Sheets.'}</td></tr>`;
+        $('tableBody').innerHTML = `<tr class="tr-empty"><td colspan="6">${term ? 'No matches.' : 'No data loaded. Connect to Sheets.'}</td></tr>`;
       } else {
         $('tableBody').innerHTML = rows.map(row => {
           const ri = workbookData.indexOf(row);
           const sel = ri === selectedIndex ? 'selected' : '';
-          const accHtml = row.account ?
-            `<span class="acc-filled">${row.account}</span>` :
-            `<span class="acc-empty">—</span>`;
-          const badge = row.account ?
-            `<span class="badge badge-green">✓</span>` :
-            `<span class="badge badge-grey">—</span>`;
+          const accHtml = row.account ? `<span class="acc-filled">${row.account}</span>` : `<span class="acc-empty">—</span>`;
+          const badge = row.account ? `<span class="badge badge-green">✓</span>` : `<span class="badge badge-grey">—</span>`;
           return `<tr class="${sel}" data-index="${ri}">
             <td style="color:var(--text3)">${row.sno}</td>
             <td><strong>${row.empCode}</strong></td>
@@ -1215,7 +1082,6 @@ function doPost(e) {
             <td>${badge} <button class="scan-acc-btn" data-scan="${ri}" title="Scan for this employee">📷 Scan</button></td>
           </tr>`;
         }).join('');
-
         $('tableBody').querySelectorAll('tr[data-index]').forEach(tr => {
           tr.addEventListener('click', e => {
             if (e.target.closest('[data-scan]')) return;
@@ -1234,7 +1100,6 @@ function doPost(e) {
       updateStats();
     }
 
-    // ── Select Row ──
     function selectRow(idx) {
       selectedIndex = idx;
       renderTable();
@@ -1250,9 +1115,7 @@ function doPost(e) {
       if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
-    // ───────────────────────────────────────────────────────────
-    //  FIXED SYNC FUNCTION (with fallback & clear errors)
-    // ───────────────────────────────────────────────────────────
+    // ─── ROBUST SYNC ENGINE ───
     async function updateAccountAndSync(val, autoNext = false) {
       val = String(val).trim();
       if (selectedIndex < 0) { toast('Select an employee first', 'error'); return false; }
@@ -1262,40 +1125,48 @@ function doPost(e) {
       const emp = workbookData[selectedIndex];
       const empCode = emp.empCode;
 
-      // Optimistic update
+      // Optimistic UI
       emp.account = val;
       renderTable();
-      setQrStatus(`⏳ Saving ${empCode} → ${val}...`, 'info');
+      setQrStatus(`⏳ Syncing ${empCode} → ${val}...`, 'info');
+
+      // Validate URL
+      if (!sheetUrl) {
+        emp.account = '';
+        renderTable();
+        const msg = 'No Web App URL connected. Please fetch data first.';
+        setQrStatus('❌ ' + msg, 'error');
+        toast('❌ ' + msg, 'error');
+        return false;
+      }
+
+      // Build URL with sheet param
+      const url = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
 
       try {
-        // Validate URL
-        if (!sheetUrl) throw new Error('No Web App URL connected. Please fetch data first.');
+        // Attempt 1: CORS with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        // Build URL with sheet parameter
-        const url = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
-
-        // First try CORS
-        let response = await fetch(url, {
+        const response = await fetch(url, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ empCode, account: val })
+          body: JSON.stringify({ empCode, account: val }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
-          // If CORS fails, try no-cors as a fallback (we won't get a response but the data will be sent)
-          if (response.status === 0 || response.type === 'opaque') {
-            throw new Error('CORS blocked – trying no‑cors fallback');
-          }
           throw new Error(`HTTP ${response.status}`);
         }
 
         const result = await response.json();
         if (result.error) throw new Error(result.error);
         if (result.success) {
-          setQrStatus(`✅ Saved: ${empCode} → ${val}`, 'success');
-          setStatus(`Account synced to Google Sheets.`, 'success');
-          toast(`✅ ${empCode}: ${val} synced`, 'success');
+          setQrStatus(`✅ ${empCode}: ${val} synced`, 'success');
+          setStatus('Sync successful!', 'success');
+          toast(`✅ ${empCode}: ${val} saved`, 'success');
           if (autoNext) {
             setTimeout(() => {
               const next = workbookData.findIndex((r, i) => i > selectedIndex && (!r.account || !r.account.trim()));
@@ -1304,325 +1175,84 @@ function doPost(e) {
           }
           return true;
         } else {
-          throw new Error(result.error || 'Unknown error from server');
+          throw new Error(result.error || 'Unknown server error');
         }
 
       } catch (err) {
-        console.warn('Sync error:', err);
-
-        // If CORS failed, try no-cors as last resort
-        if (err.message.includes('CORS') || err.message.includes('no-cors')) {
+        // If CORS fails, try no-cors as fallback
+        if (err.name === 'AbortError' || err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
           try {
-            const urlNoCors = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
-            await fetch(urlNoCors, {
+            // Attempt 2: no-cors mode (data will be sent, but we can't read response)
+            await fetch(url, {
               method: 'POST',
               mode: 'no-cors',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ empCode, account: val })
             });
-            // Since no-cors gives opaque response, we assume success and ask user to verify
-            setQrStatus(`⚠️ Sync sent (no‑cors). Please check your sheet.`, 'warn');
-            setStatus(`Sync sent – please verify in Google Sheets.`, 'warn');
-            toast(`⚠️ ${empCode}: sync sent but cannot confirm – check your sheet.`, 'warn');
-            // Keep the optimistic update
+            // Since no-cors gives no response, we show a warning
+            setQrStatus(`⚠️ Sync sent (no-cors). Please check your sheet.`, 'warn');
+            setStatus('Sync sent – please verify in Google Sheets.', 'warn');
+            toast(`⚠️ ${empCode}: sync sent – check sheet to confirm`, 'warn');
+            // Keep the optimistic update – user will verify manually
             return true;
           } catch (e2) {
             // Both attempts failed
-            emp.account = ''; // rollback
+            emp.account = '';
             renderTable();
-            const msg = 'Cannot reach Google Sheets. Check your URL, sheet name, and internet connection.';
+            const msg = 'Cannot reach Google Sheets. Check URL, sheet name, and internet connection.';
             setQrStatus('❌ ' + msg, 'error');
             toast('❌ ' + msg, 'error');
             return false;
           }
         }
 
-        // Other errors – rollback
+        // Other errors
         emp.account = '';
         renderTable();
         let userMsg = err.message || 'Unknown error';
-        if (userMsg.includes('Failed to fetch')) {
-          userMsg = 'Cannot reach the server. Check your URL and network.';
+        if (userMsg.includes('HTTP')) {
+          userMsg = 'Server error (HTTP ' + err.message.split(' ').pop() + '). Check your Apps Script deployment.';
+        } else if (userMsg.includes('Failed to fetch')) {
+          userMsg = 'Cannot reach the server. Check your URL, network, and CORS settings.';
         }
-        setQrStatus('❌ Sync failed: ' + userMsg, 'error');
+        setQrStatus('❌ ' + userMsg, 'error');
         toast('❌ ' + userMsg, 'error');
         return false;
       }
     }
 
-    // ───────────────────────────────────────────────────────────
-    //  ADVANCED SCANNER ENGINE (unchanged – works great)
-    // ───────────────────────────────────────────────────────────
-
-    async function openScanner(idx) {
-      scanTargetIndex = (idx !== undefined) ? idx : selectedIndex;
-      if (scanTargetIndex < 0) { toast('Select an employee first', 'error'); return; }
-
-      const overlay = $('scannerOverlay');
-      overlay.classList.add('active');
-      document.body.style.overflow = 'hidden';
-
-      const emp = workbookData[scanTargetIndex];
-      $('scannerEmpCode').textContent = `— ${emp.empCode}`;
-      setScannerStatus('Starting camera...', 'info');
-      hideScannerMessage();
-
-      stopScanner();
-
-      if ('BarcodeDetector' in window) {
-        try {
-          barcodeDetector = new BarcodeDetector({
-            formats: [
-              'qr_code', 'code_128', 'code_39', 'code_93', 'codabar',
-              'ean_13', 'ean_8', 'itf', 'upc_a', 'upc_e',
-              'pdf417', 'aztec', 'data_matrix'
-            ]
-          });
-          console.log('✅ BarcodeDetector initialized.');
-          await startNativeScanner();
-          return;
-        } catch (e) {
-          console.warn('⚠️ BarcodeDetector init failed:', e);
-        }
-      }
-
-      if (typeof Html5Qrcode !== 'undefined') {
-        console.log('🔄 Using html5-qrcode fallback.');
-        await startHtml5Scanner();
-        return;
-      }
-
-      setScannerStatus('❌ No scanner available on this browser.', 'error');
-      toast('Please use Chrome or Edge for best barcode scanning.', 'error');
-    }
-
-    async function startNativeScanner() {
-      const video = $('scannerVideo');
-      const constraints = {
-        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-      };
-
+    // ─── TEST CONNECTION ───
+    async function testConnection() {
+      const url = $('sheetUrl').value.trim();
+      if (!url) { toast('Paste a Web App URL first.', 'error'); return; }
+      const sName = $('sheetNameInput').value.trim() || 'Sheet1';
+      const testUrl = url + (url.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sName)}`;
+      setStatus('Testing connection...', 'info');
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = mediaStream;
-        await video.play();
-        setScannerStatus('Scanning...', 'info');
-        isScanning = true;
-
-        if ('requestVideoFrameCallback' in video) {
-          function scanFrame() {
-            if (!isScanning) return;
-            detectNativeFrame(video);
-            frameCallbackId = video.requestVideoFrameCallback(scanFrame);
+        const response = await fetch(testUrl, { method: 'GET' });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.error) {
+            toast('❌ Sheet error: ' + data.error, 'error');
+            setStatus('❌ Sheet error: ' + data.error, 'error');
+          } else {
+            toast('✅ Connection successful!', 'success');
+            setStatus('✅ Web App reachable! Click "Fetch Data" to load employees.', 'success');
           }
-          video.requestVideoFrameCallback(scanFrame);
         } else {
-          const interval = setInterval(() => {
-            if (!isScanning) { clearInterval(interval); return; }
-            detectNativeFrame(video);
-          }, 80);
+          throw new Error('HTTP ' + response.status);
         }
       } catch (err) {
-        console.error('Native scanner error:', err);
-        setScannerStatus('❌ Camera error: ' + err.message, 'error');
-        toast('Camera access failed. Please allow camera permissions.', 'error');
-        if (typeof Html5Qrcode !== 'undefined') {
-          await startHtml5Scanner();
+        let msg = err.message || 'Unknown error';
+        if (msg.includes('Failed to fetch')) {
+          msg = 'Cannot reach the URL. Check your network and the URL.';
         }
+        toast('❌ ' + msg, 'error');
+        setStatus('❌ Connection failed: ' + msg, 'error');
       }
     }
 
-    async function detectNativeFrame(video) {
-      if (video.readyState < 2 || video.videoWidth === 0) return;
-      try {
-        const results = await barcodeDetector.detect(video);
-        if (results.length > 0) {
-          const result = results[0];
-          const text = result.rawValue;
-          const formatName = result.format || 'Barcode';
-          setScannerStatus(`✅ ${formatName} detected`, 'success');
-          handleScanned(text);
-        }
-      } catch (e) { /* ignore */ }
-    }
-
-    async function startHtml5Scanner() {
-      const video = $('scannerVideo');
-      try {
-        html5Scanner = new Html5Qrcode('scannerVideo');
-        const config = {
-          fps: 20,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0
-        };
-        await html5Scanner.start(
-          { facingMode: 'environment' },
-          config,
-          (decodedText) => {
-            setScannerStatus('✅ Barcode detected', 'success');
-            handleScanned(decodedText);
-          },
-          () => {}
-        );
-        setScannerStatus('Scanning... (fallback)', 'info');
-        isScanning = true;
-        toast('Using fallback scanner. Detection may be slower.', 'info');
-      } catch (err) {
-        console.error('html5-qrcode error:', err);
-        setScannerStatus('❌ Scanner error: ' + err.message, 'error');
-        toast('Could not start scanner. Please try a different browser.', 'error');
-      }
-    }
-
-    function handleScanned(text) {
-      if (text === lastDetectedText && detectionCount > 0) {
-        detectionCount++;
-        if (detectionCount < 3) return;
-      }
-      lastDetectedText = text;
-      detectionCount = 0;
-
-      stopScanner();
-      setTimeout(() => closeScanner(), 400);
-
-      let acc = '';
-      const t = text.trim();
-      if (/^\d{6,20}$/.test(t)) {
-        acc = t;
-      } else {
-        const patterns = [
-          /ACCOUNT\s*(?:NO|NUMBER)?\s*[:=]\s*(\d+)/i,
-          /ACC\s*(?:NO)?\s*[:=]\s*(\d+)/i,
-          /A\/C\s*[:=]\s*(\d+)/i,
-          /ACCT\s*[:=]\s*(\d+)/i,
-          /(\d{9,18})/
-        ];
-        for (const p of patterns) {
-          const m = t.match(p);
-          if (m) { acc = m[1]; break; }
-        }
-        if (!acc) {
-          const d = t.match(/\d{6,20}/);
-          if (d) acc = d[0];
-        }
-      }
-
-      const prevSel = selectedIndex;
-      if (scanTargetIndex >= 0) selectedIndex = scanTargetIndex;
-
-      if (acc) {
-        $('manualAccount').value = acc;
-        updateAccountAndSync(acc, true);
-      } else {
-        toast(`Scanned but no account found. Raw: ${text.substring(0, 40)}`, 'error');
-        setQrStatus('No account number in code. Try manual entry.', 'warn');
-        if (scanTargetIndex !== prevSel) selectRow(scanTargetIndex);
-      }
-    }
-
-    function stopScanner() {
-      isScanning = false;
-      if (frameCallbackId) {
-        const video = $('scannerVideo');
-        if (video && video.cancelVideoFrameCallback) {
-          video.cancelVideoFrameCallback(frameCallbackId);
-        }
-        frameCallbackId = null;
-      }
-      if (html5Scanner) {
-        try { html5Scanner.stop();
-          html5Scanner.clear(); } catch (e) {}
-        html5Scanner = null;
-      }
-      if (mediaStream) {
-        mediaStream.getTracks().forEach(t => t.stop());
-        mediaStream = null;
-      }
-      const video = $('scannerVideo');
-      if (video) { video.srcObject = null;
-        video.pause(); }
-      lastDetectedText = '';
-      detectionCount = 0;
-    }
-
-    function closeScanner() {
-      stopScanner();
-      $('scannerOverlay').classList.remove('active');
-      document.body.style.overflow = '';
-      setScannerStatus('', 'info');
-      hideScannerMessage();
-    }
-
-    // ── Image Upload Scan ──
-    async function scanImageFile(file) {
-      if (!file) return;
-      try {
-        const img = await createImageBitmap(file);
-        let found = false;
-
-        if ('BarcodeDetector' in window) {
-          try {
-            const detector = new BarcodeDetector({
-              formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'data_matrix', 'pdf417']
-            });
-            const results = await detector.detect(img);
-            if (results.length > 0) {
-              handleScanned(results[0].rawValue);
-              found = true;
-            }
-          } catch (e) {}
-        }
-
-        if (!found && typeof Html5Qrcode !== 'undefined') {
-          const tempScanner = new Html5Qrcode('dummy');
-          try {
-            const result = await tempScanner.scanFile(file, true);
-            handleScanned(result);
-            found = true;
-          } catch (e) {}
-        }
-
-        if (!found) {
-          toast('No barcode found in image.', 'error');
-          setScannerStatus('No barcode detected in image.', 'error');
-        }
-      } catch (e) {
-        toast('Error processing image: ' + e.message, 'error');
-      }
-    }
-
-    // ── Manual Scan Frame ──
-    function manualScanFrame() {
-      const video = $('scannerVideo');
-      if (video.readyState >= 2 && video.videoWidth > 0) {
-        if (barcodeDetector) {
-          detectNativeFrame(video);
-          toast('Scanning current frame...', 'info');
-        } else if (html5Scanner) {
-          toast('Using auto-scanner or upload an image.', 'warn');
-        }
-      } else {
-        toast('No video frame available.', 'error');
-      }
-    }
-
-    // ── Flash Toggle ──
-    function toggleFlash() {
-      if (!mediaStream) { toast('Camera not active', 'warn'); return; }
-      const track = mediaStream.getVideoTracks()[0];
-      if (track && track.getCapabilities && track.getCapabilities().torch) {
-        const torch = track.getSettings().torch;
-        track.applyConstraints({ advanced: [{ torch: !torch }] });
-        toast(!torch ? '💡 Flash on' : '💡 Flash off', 'info');
-      } else {
-        toast('Flash not supported on this device', 'warn');
-      }
-    }
-
-    // ════════════════════════════════════════
-    // GOOGLE SHEETS FETCH
-    // ════════════════════════════════════════
-
+    // ─── FETCH DATA ───
     async function fetchSheetData() {
       const url = $('sheetUrl').value.trim();
       const sName = $('sheetNameInput').value.trim() || 'Sheet1';
@@ -1695,26 +1325,204 @@ function doPost(e) {
       }
     }
 
-    // ── Test Web App ──
-    $('btnTest').addEventListener('click', async () => {
-      const url = $('sheetUrl').value.trim();
-      if (!url) { toast('Enter URL first', 'error'); return; }
-      try {
-        const testUrl = url + (url.includes('?') ? '&' : '?') + 'sheet=Sheet1';
-        const r = await fetch(testUrl);
-        if (r.ok) {
-          const data = await r.json();
-          toast('✅ URL reachable – sheet accessible!', 'success');
-        } else {
-          throw new Error('HTTP ' + r.status);
-        }
-      } catch (e) {
-        toast('❌ Could not reach URL: ' + e.message, 'error');
-      }
-    });
+    // ─── SCANNER ENGINE ───
+    async function openScanner(idx) {
+      scanTargetIndex = (idx !== undefined) ? idx : selectedIndex;
+      if (scanTargetIndex < 0) { toast('Select an employee first', 'error'); return; }
 
-    // ── Event bindings ──
+      const overlay = $('scannerOverlay');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      const emp = workbookData[scanTargetIndex];
+      $('scannerEmpCode').textContent = `— ${emp.empCode}`;
+      setScannerStatus('Starting camera...', 'info');
+      hideScannerMessage();
+
+      stopScanner();
+
+      if ('BarcodeDetector' in window) {
+        try {
+          barcodeDetector = new BarcodeDetector({
+            formats: ['qr_code', 'code_128', 'code_39', 'code_93', 'codabar', 'ean_13', 'ean_8', 'itf', 'upc_a', 'upc_e', 'pdf417', 'aztec', 'data_matrix']
+          });
+          await startNativeScanner();
+          return;
+        } catch (e) { console.warn('BarcodeDetector init failed:', e); }
+      }
+
+      if (typeof Html5Qrcode !== 'undefined') {
+        await startHtml5Scanner();
+        return;
+      }
+
+      setScannerStatus('❌ No scanner available.', 'error');
+      toast('Please use Chrome or Edge.', 'error');
+    }
+
+    async function startNativeScanner() {
+      const video = $('scannerVideo');
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = mediaStream;
+        await video.play();
+        setScannerStatus('Scanning...', 'info');
+        isScanning = true;
+
+        if ('requestVideoFrameCallback' in video) {
+          const scanFrame = () => {
+            if (!isScanning) return;
+            detectNativeFrame(video);
+            frameCallbackId = video.requestVideoFrameCallback(scanFrame);
+          };
+          video.requestVideoFrameCallback(scanFrame);
+        } else {
+          const interval = setInterval(() => {
+            if (!isScanning) { clearInterval(interval); return; }
+            detectNativeFrame(video);
+          }, 80);
+        }
+      } catch (err) {
+        setScannerStatus('❌ Camera error: ' + err.message, 'error');
+        toast('Camera access failed.', 'error');
+        if (typeof Html5Qrcode !== 'undefined') await startHtml5Scanner();
+      }
+    }
+
+    async function detectNativeFrame(video) {
+      if (video.readyState < 2 || video.videoWidth === 0) return;
+      try {
+        const results = await barcodeDetector.detect(video);
+        if (results.length > 0) {
+          const result = results[0];
+          setScannerStatus(`✅ ${result.format} detected`, 'success');
+          handleScanned(result.rawValue);
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    async function startHtml5Scanner() {
+      try {
+        html5Scanner = new Html5Qrcode('scannerVideo');
+        await html5Scanner.start(
+          { facingMode: 'environment' },
+          { fps: 20, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+          (decodedText) => { setScannerStatus('✅ Barcode detected', 'success');
+            handleScanned(decodedText); },
+          () => {}
+        );
+        setScannerStatus('Scanning... (fallback)', 'info');
+        isScanning = true;
+      } catch (err) {
+        setScannerStatus('❌ Scanner error: ' + err.message, 'error');
+        toast('Could not start scanner.', 'error');
+      }
+    }
+
+    function handleScanned(text) {
+      if (text === lastDetectedText && detectionCount > 0) { detectionCount++; if (detectionCount < 3) return; }
+      lastDetectedText = text;
+      detectionCount = 0;
+      stopScanner();
+      setTimeout(() => closeScanner(), 400);
+
+      let acc = '';
+      const t = text.trim();
+      if (/^\d{6,20}$/.test(t)) acc = t;
+      else {
+        const patterns = [
+          /ACCOUNT\s*(?:NO|NUMBER)?\s*[:=]\s*(\d+)/i, /ACC\s*(?:NO)?\s*[:=]\s*(\d+)/i,
+          /A\/C\s*[:=]\s*(\d+)/i, /ACCT\s*[:=]\s*(\d+)/i, /(\d{9,18})/
+        ];
+        for (const p of patterns) { const m = t.match(p); if (m) { acc = m[1]; break; } }
+        if (!acc) { const d = t.match(/\d{6,20}/); if (d) acc = d[0]; }
+      }
+
+      const prevSel = selectedIndex;
+      if (scanTargetIndex >= 0) selectedIndex = scanTargetIndex;
+      if (acc) {
+        $('manualAccount').value = acc;
+        updateAccountAndSync(acc, true);
+      } else {
+        toast(`Scanned but no account found. Raw: ${text.substring(0, 40)}`, 'error');
+        setQrStatus('No account number in code. Try manual entry.', 'warn');
+        if (scanTargetIndex !== prevSel) selectRow(scanTargetIndex);
+      }
+    }
+
+    function stopScanner() {
+      isScanning = false;
+      if (frameCallbackId) {
+        const video = $('scannerVideo');
+        if (video && video.cancelVideoFrameCallback) video.cancelVideoFrameCallback(frameCallbackId);
+        frameCallbackId = null;
+      }
+      if (html5Scanner) { try { html5Scanner.stop();
+          html5Scanner.clear(); } catch (e) {}html5Scanner = null; }
+      if (mediaStream) { mediaStream.getTracks().forEach(t => t.stop());
+        mediaStream = null; }
+      const video = $('scannerVideo');
+      if (video) { video.srcObject = null;
+        video.pause(); }
+      lastDetectedText = '';
+      detectionCount = 0;
+    }
+
+    function closeScanner() {
+      stopScanner();
+      $('scannerOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+      setScannerStatus('', 'info');
+      hideScannerMessage();
+    }
+
+    async function scanImageFile(file) {
+      if (!file) return;
+      try {
+        const img = await createImageBitmap(file);
+        let found = false;
+        if ('BarcodeDetector' in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'data_matrix', 'pdf417'] });
+            const results = await detector.detect(img);
+            if (results.length > 0) { handleScanned(results[0].rawValue);
+              found = true; }
+          } catch (e) {}
+        }
+        if (!found && typeof Html5Qrcode !== 'undefined') {
+          const tempScanner = new Html5Qrcode('dummy');
+          try { const result = await tempScanner.scanFile(file, true);
+            handleScanned(result);
+            found = true; } catch (e) {}
+        }
+        if (!found) { toast('No barcode found in image.', 'error');
+          setScannerStatus('No barcode detected.', 'error'); }
+      } catch (e) { toast('Error processing image.', 'error'); }
+    }
+
+    function manualScanFrame() {
+      const video = $('scannerVideo');
+      if (video.readyState >= 2 && video.videoWidth > 0) {
+        if (barcodeDetector) { detectNativeFrame(video);
+          toast('Scanning frame...', 'info'); } else { toast('Use auto-scanner or upload image.', 'warn'); }
+      } else { toast('No video frame.', 'error'); }
+    }
+
+    function toggleFlash() {
+      if (!mediaStream) { toast('Camera not active', 'warn'); return; }
+      const track = mediaStream.getVideoTracks()[0];
+      if (track && track.getCapabilities && track.getCapabilities().torch) {
+        const torch = track.getSettings().torch;
+        track.applyConstraints({ advanced: [{ torch: !torch }] });
+        toast(!torch ? '💡 Flash on' : '💡 Flash off', 'info');
+      } else { toast('Flash not supported', 'warn'); }
+    }
+
+    // ─── EVENT BINDINGS ───
     $('btnFetch').addEventListener('click', fetchSheetData);
+    $('btnTest').addEventListener('click', testConnection);
     $('btnDisconn').addEventListener('click', () => {
       sheetUrl = '';
       sheetName = 'Sheet1';
@@ -1727,22 +1535,16 @@ function doPost(e) {
       renderTable();
       toast('Disconnected', 'info');
     });
-
     $('btnApply').addEventListener('click', () => updateAccountAndSync($('manualAccount').value, true));
     $('manualAccount').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnApply').click(); });
     $('btnOpenScanner').addEventListener('click', () => openScanner(selectedIndex));
-
     $('scannerClose').addEventListener('click', closeScanner);
-    $('scannerImageInput').addEventListener('change', e => {
-      const f = e.target.files[0];
+    $('scannerImageInput').addEventListener('change', e => { const f = e.target.files[0];
       e.target.value = '';
-      if (f) scanImageFile(f);
-    });
+      if (f) scanImageFile(f); });
     $('scannerFlash').addEventListener('click', toggleFlash);
     $('scannerScanNow').addEventListener('click', manualScanFrame);
-
     $('searchInput').addEventListener('input', renderTable);
-
     $('btnGuide').addEventListener('click', () => {
       const b = $('guideBody');
       const a = $('guideArrow');
@@ -1750,23 +1552,17 @@ function doPost(e) {
       a.textContent = b.classList.contains('open') ? '▲' : '▼';
     });
 
-    // ── Restore saved URL ──
+    // ─── RESTORE ───
     function restoreSaved() {
       const u = localStorage.getItem(UKEY);
       const s = localStorage.getItem(SNAMEKEY) || 'Sheet1';
-      if (u) {
-        $('sheetUrl').value = u;
+      if (u) { $('sheetUrl').value = u;
         $('sheetNameInput').value = s;
-        fetchSheetData();
-      }
+        fetchSheetData(); }
     }
-
-    // ── Init ──
     restoreSaved();
-    if (!workbookData.length) {
-      setStatus('Connect to Google Sheets and fetch data.', 'info');
-      $('syncStatus').style.display = 'none';
-    }
+    if (!workbookData.length) { setStatus('Connect to Google Sheets and fetch data.', 'info');
+      $('syncStatus').style.display = 'none'; }
 
     console.log('✅ Advanced Barcode Scanner with robust sync ready.');
   </script>
