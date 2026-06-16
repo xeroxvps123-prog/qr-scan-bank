@@ -305,6 +305,7 @@ let scanInterval = null;
 let barcodeDetector = null;
 let scanTargetIndex = -1;
 let scannerActive = false;
+let frameCallback = null;
 const UKEY = 'bankQrUrl';
 const SNAMEKEY = 'bankQrSheetName';
 
@@ -465,7 +466,7 @@ async function updateAccountAndSync(val, autoNext=false) {
 }
 
 // ───────────────────────────────────────────────────────────
-//  FULL SCREEN SCANNER
+//  FAST QR SCANNER (requestVideoFrameCallback + BarcodeDetector)
 // ───────────────────────────────────────────────────────────
 
 async function openScanner(idx) {
@@ -480,10 +481,10 @@ async function openScanner(idx) {
   $('scannerTitle').textContent = `Scan for ${workbookData[scanTargetIndex].empCode}`;
   $('scannerStatusText').textContent = 'Position QR code in the center';
   
-  // Init BarcodeDetector
+  // Init BarcodeDetector – only QR for speed
   if (window.BarcodeDetector) {
     try {
-      barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] }); // Only QR for speed
+      barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
     } catch(e){ barcodeDetector=null; }
   }
   
@@ -517,45 +518,59 @@ async function startScannerCamera() {
   
   mediaStream = stream;
   video.srcObject = stream;
-  video.play().catch(()=>{});
+  await video.play().catch(()=>{});
   
   // Start scan loop when video is ready
-  video.addEventListener('loadedmetadata', startScannerLoop, {once:true});
-  if (video.readyState >= 2) startScannerLoop();
+  if ('requestVideoFrameCallback' in video) {
+    // Use the fastest method – frame callback
+    frameCallback = () => {
+      if (!scannerActive) return;
+      detectFrame(video);
+      video.requestVideoFrameCallback(frameCallback);
+    };
+    video.requestVideoFrameCallback(frameCallback);
+  } else {
+    // Fallback to interval (still fast)
+    if (scanInterval) clearInterval(scanInterval);
+    scanInterval = setInterval(() => {
+      if (!scannerActive) return;
+      detectFrame(video);
+    }, 50);
+  }
 }
 
-function startScannerLoop() {
-  if (scanInterval) clearInterval(scanInterval);
-  scanInterval = setInterval(async () => {
-    const video = $('scannerVideo');
-    if (video.readyState < 2 || video.videoWidth===0) return;
-    
-    // BarcodeDetector (fastest)
-    if (barcodeDetector) {
-      try {
-        const results = await barcodeDetector.detect(video);
-        if (results.length > 0) {
-          const text = results[0].rawValue;
-          handleScanned(text);
-          return;
-        }
-      } catch(e){}
-    }
-    
-    // Fallback jsQR (slower but works)
-    if (window.jsQR) {
-      const canvas = $('scannerCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height, {inversionAttempts:'dontInvert'});
-      if (code && code.data) {
-        handleScanned(code.data);
+async function detectFrame(video) {
+  if (video.readyState < 2 || video.videoWidth === 0) return;
+  
+  // 1. BarcodeDetector – fastest
+  if (barcodeDetector) {
+    try {
+      const results = await barcodeDetector.detect(video);
+      if (results.length > 0) {
+        const text = results[0].rawValue;
+        handleScanned(text);
+        return;
       }
+    } catch(e){ /* ignore */ }
+  }
+  
+  // 2. jsQR fallback – slower but more compatible
+  if (window.jsQR) {
+    const canvas = $('scannerCanvas');
+    const ctx = canvas.getContext('2d');
+    // Use a smaller resolution for speed
+    const scale = 0.5;
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+      inversionAttempts: 'dontInvert'
+    });
+    if (code && code.data) {
+      handleScanned(code.data);
     }
-  }, 100); // Fast scan
+  }
 }
 
 function handleScanned(text) {
@@ -591,11 +606,12 @@ function handleScanned(text) {
 }
 
 function stopScannerCamera() {
+  scannerActive = false;
   if (scanInterval) { clearInterval(scanInterval); scanInterval=null; }
+  if (frameCallback) { frameCallback = null; }
   if (mediaStream) { mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
   const v = $('scannerVideo');
   if (v) { v.srcObject=null; }
-  scannerActive = false;
 }
 
 function closeScanner() {
@@ -757,7 +773,6 @@ $('scannerImageInput').addEventListener('change', e=>{
   if(f) scanImageFile(f);
 });
 $('scannerFlash').addEventListener('click', ()=>{
-  // Toggle torch if available
   if (mediaStream) {
     const track = mediaStream.getVideoTracks()[0];
     if (track && track.getCapabilities && track.getCapabilities().torch) {
@@ -765,7 +780,7 @@ $('scannerFlash').addEventListener('click', ()=>{
       track.applyConstraints({ advanced: [{ torch: !torch }] });
       toast(!torch ? '💡 Flash on' : '💡 Flash off', 'info');
     } else {
-      toast('Flash not supported on this device','warn');
+      toast('Flash not supported','warn');
     }
   }
 });
