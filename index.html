@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>High-Speed Barcode Scanner · Google Sheets</title>
+  <title>Barcode Scanner · Google Sheets</title>
   <style>
-    /* --- CSS Reset & Base Styles --- */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    /* ── CSS Reset & Variables ── */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
     :root {
       --bg: #f0f4ff;
       --surface: #fff;
@@ -25,6 +25,7 @@
       --text2: #4a5568;
       --text3: #8a94a6;
       --mono: 'JetBrains Mono', monospace;
+      --shadow: 0 8px 30px rgba(0, 0, 0, .08);
     }
     * {
       box-sizing: border-box;
@@ -37,31 +38,43 @@
       color: var(--text);
       min-height: 100vh;
     }
-    /* --- Top Bar --- */
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--surface2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
+
+    /* ── Top Bar ── */
     .topbar {
       background: var(--accent);
       color: #fff;
       padding: 0 24px;
-      height: 54px;
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 12px rgba(59, 91, 219, .35);
+      box-shadow: 0 2px 16px rgba(59, 91, 219, .3);
       position: sticky;
       top: 0;
       z-index: 200;
     }
     .brand {
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
     }
     .brand-icon {
-      width: 30px;
-      height: 30px;
-      background: rgba(255, 255, 255, .2);
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, .18);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -69,17 +82,18 @@
       font-size: 16px;
     }
     .chip {
-      background: rgba(255, 255, 255, .15);
-      padding: 3px 11px;
+      background: rgba(255, 255, 255, .13);
+      padding: 4px 12px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
     }
     .chips {
       display: flex;
       gap: 6px;
     }
-    /* --- Layout --- */
+
+    /* ── Layout ── */
     .layout {
       display: grid;
       grid-template-columns: 360px 1fr;
@@ -93,21 +107,23 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ── Panels ── */
     .panel {
       background: var(--surface);
-      border-radius: 14px;
+      border-radius: 16px;
       border: 1px solid var(--border);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
+      box-shadow: var(--shadow);
       overflow: hidden;
     }
     .ph {
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--text3);
       text-transform: uppercase;
-      letter-spacing: .6px;
+      letter-spacing: .7px;
       background: var(--surface2);
       display: flex;
       align-items: center;
@@ -116,18 +132,19 @@
     .pb {
       padding: 14px 16px;
     }
-    /* --- Buttons & Inputs --- */
+
+    /* ── Buttons ── */
     .btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 9px 15px;
-      border-radius: 9px;
+      padding: 9px 16px;
+      border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
       border: none;
       cursor: pointer;
-      transition: all .16s;
+      transition: all .18s;
       white-space: nowrap;
       font-family: 'Inter', sans-serif;
     }
@@ -137,7 +154,7 @@
     }
     .btn-primary:hover {
       background: var(--accent2);
-      box-shadow: 0 4px 14px rgba(59, 91, 219, .35);
+      box-shadow: 0 4px 16px rgba(59, 91, 219, .35);
       transform: translateY(-1px);
     }
     .btn-success {
@@ -154,7 +171,6 @@
     }
     .btn-danger:hover {
       background: #a92323;
-      transform: translateY(-1px);
     }
     .btn-ghost {
       background: var(--surface2);
@@ -167,8 +183,8 @@
       border-color: var(--accent);
     }
     .btn-sm {
-      padding: 6px 11px;
-      font-size: 12px;
+      padding: 5px 11px;
+      font-size: 11px;
       border-radius: 7px;
     }
     .btn-row {
@@ -180,11 +196,18 @@
       width: 100%;
       justify-content: center;
     }
+    .btn:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* ── Inputs ── */
     .input {
       width: 100%;
       padding: 9px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 9px;
+      border-radius: 10px;
       font-size: 13px;
       font-family: 'Inter', sans-serif;
       color: var(--text);
@@ -198,19 +221,19 @@
     }
     .input-mono {
       font-family: var(--mono);
-      letter-spacing: .5px;
+      letter-spacing: .4px;
     }
     .fl {
       margin-bottom: 10px;
     }
     .fl-label {
       display: block;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--text2);
       margin-bottom: 4px;
       text-transform: uppercase;
-      letter-spacing: .4px;
+      letter-spacing: .5px;
     }
     .ig {
       display: flex;
@@ -219,10 +242,11 @@
     .ig .input {
       flex: 1;
     }
-    /* --- Status & Table --- */
+
+    /* ── Status Bars ── */
     .sbar {
       padding: 9px 13px;
-      border-radius: 9px;
+      border-radius: 10px;
       font-size: 13px;
       display: flex;
       align-items: center;
@@ -250,6 +274,8 @@
       border-color: #f5d98a;
       color: #7d5a00;
     }
+
+    /* ── Table ── */
     .table-wrap {
       overflow-x: auto;
       max-height: calc(100vh - 140px);
@@ -264,10 +290,10 @@
     th {
       text-align: left;
       padding: 10px 13px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .5px;
+      letter-spacing: .6px;
       color: var(--text3);
       background: var(--surface2);
       border-bottom: 1px solid var(--border);
@@ -279,6 +305,9 @@
       padding: 10px 13px;
       border-bottom: 1px solid var(--border);
       vertical-align: middle;
+    }
+    tr:last-child td {
+      border-bottom: none;
     }
     tr[data-index] {
       cursor: pointer;
@@ -314,7 +343,7 @@
       display: inline-block;
       padding: 2px 8px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       background: var(--accent-light);
       color: var(--accent);
@@ -332,21 +361,25 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 9px;
+      padding: 3px 9px;
       border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 700;
       border: none;
       cursor: pointer;
       background: var(--accent-light);
       color: var(--accent);
       transition: all .15s;
       white-space: nowrap;
+      font-family: 'Inter', sans-serif;
     }
     .scan-acc-btn:hover {
       background: var(--accent);
       color: #fff;
+      transform: scale(1.05);
     }
+
+    /* ── Google Sheets Connect ── */
     .sheets-connected {
       background: var(--green-light);
       border-radius: 10px;
@@ -365,7 +398,7 @@
       word-break: break-all;
       margin-top: 4px;
       padding: 5px 9px;
-      background: rgba(255, 255, 255, .7);
+      background: rgba(255, 255, 255, .6);
       border-radius: 6px;
     }
     .sheets-setup {
@@ -402,7 +435,7 @@
       color: #a8c2ff;
       padding: 12px;
       border-radius: 9px;
-      font-size: 11px;
+      font-size: 10px;
       font-family: var(--mono);
       overflow-x: auto;
       line-height: 1.6;
@@ -428,7 +461,7 @@
       border-radius: 50%;
       background: var(--accent);
       color: #fff;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -451,26 +484,28 @@
         opacity: 1;
       }
       50% {
-        transform: scale(1.5);
-        opacity: .5;
+        transform: scale(1.6);
+        opacity: .4;
       }
     }
+
+    /* ── Toast ── */
     #toast {
       position: fixed;
-      bottom: 18px;
-      right: 18px;
-      padding: 11px 18px;
-      border-radius: 11px;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 12px;
       background: #1a1f36;
       color: #fff;
       font-size: 13px;
-      font-weight: 500;
-      box-shadow: 0 8px 28px rgba(0, 0, 0, .25);
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
       transform: translateY(80px);
       opacity: 0;
-      transition: all .32s cubic-bezier(.22, 1, .36, 1);
+      transition: all .4s cubic-bezier(.22, 1, .36, 1);
       z-index: 999;
-      max-width: 320px;
+      max-width: 360px;
     }
     #toast.show {
       transform: translateY(0);
@@ -491,44 +526,66 @@
       margin: 10px 0;
     }
 
-    /* --- Scanner Styles --- */
-    #scannerContainer {
+    /* ════════════════════════════════════════
+       ADVANCED FULL-SCREEN SCANNER UI
+       ════════════════════════════════════════ */
+    #scannerOverlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #000;
+      inset: 0;
       z-index: 1000;
+      background: #0a0a0f;
       display: none;
       flex-direction: column;
+      justify-content: space-between;
+      font-family: 'Inter', sans-serif;
     }
-    #scannerContainer.active {
+    #scannerOverlay.active {
       display: flex;
     }
-    #scannerHeader {
+
+    /* ── Scanner Header ── */
+    .scanner-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 16px 20px;
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
+      background: linear-gradient(180deg, rgba(0, 0, 0, .6) 0%, transparent 100%);
       flex-shrink: 0;
       z-index: 10;
     }
-    #scannerHeader .title {
-      font-size: 16px;
-      font-weight: 600;
-    }
-    #scannerHeader .close-btn {
-      background: none;
-      border: none;
+    .scanner-header .title {
       color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0 8px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, .4);
     }
-    #scannerVideoWrapper {
+    .scanner-header .title .emp-code {
+      color: rgba(255, 255, 255, .6);
+      font-weight: 400;
+      font-size: 13px;
+    }
+    .scanner-close {
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+      backdrop-filter: blur(8px);
+    }
+    .scanner-close:hover {
+      background: rgba(255, 255, 255, .18);
+    }
+
+    /* ── Scanner Video ── */
+    .scanner-video-wrap {
       flex: 1;
       position: relative;
       overflow: hidden;
@@ -542,117 +599,275 @@
       height: 100%;
       object-fit: cover;
     }
-    #scannerOverlay {
+
+    /* ── Scanner Overlay ── */
+    .scanner-overlay-ui {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       pointer-events: none;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
-    #scanRegion {
+
+    /* Scan Region */
+    .scan-region {
       width: 70%;
-      max-width: 300px;
+      max-width: 280px;
       aspect-ratio: 1 / 1;
-      border: 2px solid rgba(255, 255, 255, 0.7);
-      border-radius: 16px;
       position: relative;
-      box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      box-shadow: 0 0 0 4000px rgba(0, 0, 0, .45);
     }
-    #scanRegion::after {
+    /* Border corners */
+    .scan-region::before,
+    .scan-region::after {
       content: '';
       position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 2px;
-      height: 30px;
-      background: #3b5bdb;
-      animation: scanLine 2s ease-in-out infinite;
+      width: 24px;
+      height: 24px;
+      border-color: #3b5bdb;
+      border-style: solid;
+      border-width: 0;
     }
-    @keyframes scanLine {
+    .scan-region::before {
+      top: -1px;
+      left: -1px;
+      border-top-width: 3px;
+      border-left-width: 3px;
+      border-radius: 4px 0 0 0;
+    }
+    .scan-region::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom-width: 3px;
+      border-right-width: 3px;
+      border-radius: 0 0 4px 0;
+    }
+    .scan-region .corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-color: #3b5bdb;
+      border-style: solid;
+      border-width: 0;
+    }
+    .scan-region .corner.tl {
+      top: -1px;
+      left: -1px;
+      border-top-width: 3px;
+      border-left-width: 3px;
+      border-radius: 4px 0 0 0;
+    }
+    .scan-region .corner.tr {
+      top: -1px;
+      right: -1px;
+      border-top-width: 3px;
+      border-right-width: 3px;
+      border-radius: 0 4px 0 0;
+    }
+    .scan-region .corner.bl {
+      bottom: -1px;
+      left: -1px;
+      border-bottom-width: 3px;
+      border-left-width: 3px;
+      border-radius: 0 0 0 4px;
+    }
+    .scan-region .corner.br {
+      bottom: -1px;
+      right: -1px;
+      border-bottom-width: 3px;
+      border-right-width: 3px;
+      border-radius: 0 0 4px 0;
+    }
+
+    /* Scan Line */
+    .scan-line {
+      position: absolute;
+      left: 10%;
+      width: 80%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #3b5bdb, #6b8aff, #3b5bdb, transparent);
+      box-shadow: 0 0 20px rgba(59, 91, 219, .6);
+      border-radius: 2px;
+      animation: scanMove 2s ease-in-out infinite;
+    }
+    @keyframes scanMove {
       0%,
       100% {
-        top: 0;
+        top: 8%;
       }
       50% {
-        top: calc(100% - 30px);
+        top: 88%;
       }
     }
-    #scannerStatus {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 14px;
-      font-weight: 500;
-      margin-top: 20px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+    /* ── Scanner Status ── */
+    .scanner-status-area {
+      position: absolute;
+      bottom: 80px;
+      left: 0;
+      right: 0;
       text-align: center;
+      pointer-events: none;
       padding: 0 20px;
     }
-    #scannerControls {
+    .scanner-status-text {
+      color: rgba(255, 255, 255, .85);
+      font-size: 14px;
+      font-weight: 500;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, .6);
+      letter-spacing: .3px;
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(0, 0, 0, .35);
+      border-radius: 20px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+    .scanner-status-text.detected {
+      color: #69db7c;
+      border-color: rgba(105, 219, 124, .3);
+    }
+    .scanner-status-text.error {
+      color: #ff6b6b;
+      border-color: rgba(255, 107, 107, .3);
+    }
+    .scanner-status-text .format-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(59, 91, 219, .3);
+      color: #a8c2ff;
+      margin-left: 6px;
+    }
+
+    /* ── Scanner Footer Controls ── */
+    .scanner-controls {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       justify-content: center;
-      padding: 16px 20px;
-      background: rgba(0, 0, 0, 0.8);
+      padding: 16px 20px 24px;
+      background: linear-gradient(0deg, rgba(0, 0, 0, .7) 0%, transparent 100%);
       flex-shrink: 0;
       z-index: 10;
       flex-wrap: wrap;
+      align-items: center;
     }
-    #scannerControls .btn {
-      background: rgba(255, 255, 255, 0.15);
+    .scanner-controls .btn {
+      background: rgba(255, 255, 255, .08);
       color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, .1);
+      backdrop-filter: blur(8px);
+      padding: 10px 16px;
+      font-size: 12px;
+      border-radius: 12px;
+      transition: all .2s;
+      font-weight: 600;
     }
-    #scannerControls .btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+    .scanner-controls .btn:hover {
+      background: rgba(255, 255, 255, .16);
+      border-color: rgba(255, 255, 255, .2);
+      transform: translateY(-1px);
     }
-    #scannerControls .btn:active {
-      transform: scale(0.95);
+    .scanner-controls .btn:active {
+      transform: scale(.94);
     }
-    #scannerControls .file-wrap {
+    .scanner-controls .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .scanner-controls .btn-primary:hover {
+      background: var(--accent2);
+      border-color: var(--accent2);
+    }
+    .scanner-controls .btn .icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+    .scanner-controls .file-wrap {
       position: relative;
       display: inline-flex;
     }
-    #scannerControls .file-wrap input[type="file"] {
+    .scanner-controls .file-wrap input[type="file"] {
       position: absolute;
       inset: 0;
       opacity: 0;
       cursor: pointer;
       width: 100%;
     }
-    #scannerMessage {
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 13px;
+
+    /* ── Scanner Message ── */
+    .scanner-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
       text-align: center;
-      padding: 8px;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 8px;
-      margin: 8px 20px 0;
+      padding: 12px 24px;
+      background: rgba(0, 0, 0, .65);
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .08);
       display: none;
+      pointer-events: none;
+      max-width: 80%;
+      z-index: 5;
     }
-    #scannerMessage.show {
+    .scanner-message.show {
       display: block;
     }
-    #scannerMessage.error {
+    .scanner-message.error {
       color: #ff6b6b;
-      border: 1px solid #ff6b6b;
+      border-color: rgba(255, 107, 107, .2);
     }
-    #scannerMessage.success {
+    .scanner-message.success {
       color: #69db7c;
-      border: 1px solid #69db7c;
+      border-color: rgba(105, 219, 124, .2);
+    }
+
+    /* ── Responsive ── */
+    @media(max-width:600px) {
+      .scan-region {
+        width: 80%;
+        max-width: 220px;
+      }
+      .scanner-controls .btn {
+        padding: 8px 12px;
+        font-size: 11px;
+      }
+      .scanner-status-text {
+        font-size: 12px;
+        padding: 4px 12px;
+      }
+      .layout {
+        padding: 12px;
+        gap: 12px;
+      }
+      .topbar {
+        padding: 0 16px;
+        height: 48px;
+      }
+      .brand {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOPBAR -->
+  <!-- ═══ TOP BAR ═══ -->
   <div class="topbar">
-    <div class="brand"><div class="brand-icon">🏦</div>Barcode Updater</div>
+    <div class="brand">
+      <div class="brand-icon">📷</div>
+      Barcode Updater
+    </div>
     <div class="chips">
       <div class="chip">Total: <strong id="stTotal">0</strong></div>
       <div class="chip" style="background:rgba(15,153,96,.3)">✓ <strong id="stFilled">0</strong></div>
@@ -660,19 +875,21 @@
     </div>
   </div>
 
-  <!-- LAYOUT -->
+  <!-- ═══ MAIN LAYOUT ═══ -->
   <div class="layout">
 
     <!-- LEFT PANEL -->
     <div style="display:flex;flex-direction:column;gap:14px">
 
-      <!-- GOOGLE SHEETS CONNECTION -->
+      <!-- ── Google Sheets Connection ── -->
       <div class="panel">
         <div class="ph"><span>🔗 Google Sheets</span></div>
         <div class="pb">
           <div class="sheets-connected" id="sheetsConn">
             <div style="display:flex;align-items:center;justify-content:space-between">
-              <div style="font-size:13px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:6px"><span class="pulse"></span> Connected</div>
+              <div style="font-size:13px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:6px">
+                <span class="pulse"></span> Connected
+              </div>
               <button class="btn btn-ghost btn-sm" id="btnDisconn">Change</button>
             </div>
             <div class="url-display" id="urlDisplay"></div>
@@ -681,7 +898,9 @@
           <div class="sheets-setup" id="sheetsSetup">
             <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:8px">Paste your Web App URL</div>
             <div class="fl">
-              <input type="text" class="input input-mono" id="sheetUrl" placeholder="https://script.google.com/macros/s/…/exec" style="font-size:10.5px"/>
+              <input type="text" class="input input-mono" id="sheetUrl"
+              placeholder="https://script.google.com/macros/s/…/exec"
+              style="font-size:10.5px"/>
             </div>
             <div class="fl">
               <label class="fl-label">Sheet Name (tab)</label>
@@ -692,7 +911,9 @@
               <button class="btn btn-ghost btn-sm" id="btnTest">🧪 Test</button>
             </div>
           </div>
-          <div class="sbar info" id="syncStatus" style="margin-top:10px;display:none"><span></span><span id="syncText"></span></div>
+          <div class="sbar info" id="syncStatus" style="margin-top:10px;display:none">
+            <span></span><span id="syncText"></span>
+          </div>
           <hr class="div">
           <button class="guide-toggle" id="btnGuide">📖 How to set up <span id="guideArrow">▼</span></button>
           <div class="guide-body" id="guideBody">
@@ -741,7 +962,7 @@ function doPost(e) {
         </div>
       </div>
 
-      <!-- SELECTED EMPLOYEE -->
+      <!-- ── Active Employee ── -->
       <div class="panel">
         <div class="ph"><span>📷 Active Employee</span></div>
         <div class="pb">
@@ -751,7 +972,7 @@ function doPost(e) {
           </div>
           <div id="selEmpCard" style="display:none">
             <div style="background:var(--accent-light);border-radius:10px;padding:12px;margin-bottom:12px;border:1.5px solid #c5d0f7">
-              <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Selected Employee</div>
+              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Selected Employee</div>
               <div style="font-size:16px;font-weight:700;color:var(--accent)" id="selEmpName">—</div>
               <div style="font-size:12px;color:var(--text2);margin-top:2px" id="selEmpCode">—</div>
             </div>
@@ -768,7 +989,9 @@ function doPost(e) {
               <button class="btn btn-success btn-full" id="btnApply">✅ Save to Sheet</button>
             </div>
 
-            <div class="sbar info" id="qrStatus" style="margin-top:10px"><span>📡</span><span id="qrStatusText">Select an employee and tap Scan.</span></div>
+            <div class="sbar info" id="qrStatus" style="margin-top:10px">
+              <span>📡</span><span id="qrStatusText">Select an employee and tap Scan.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -790,8 +1013,8 @@ function doPost(e) {
               <th>Emp Code</th>
               <th>Name</th>
               <th>Mobile</th>
-              <th>Account Number</th>
-              <th style="width:90px">Action</th>
+              <th>Account</th>
+              <th style="width:80px">Action</th>
             </tr>
           </thead>
           <tbody id="tableBody">
@@ -799,42 +1022,69 @@ function doPost(e) {
           </tbody>
         </table>
       </div>
-      <div style="padding:9px 14px;font-size:12px;color:var(--text3);border-top:1px solid var(--border);background:var(--surface2)">
-        💡 Click a row to select. Tap <strong>📷 Scan</strong> to open the barcode scanner.
+      <div style="padding:9px 14px;font-size:11px;color:var(--text3);border-top:1px solid var(--border);background:var(--surface2)">
+        💡 Click a row to select. Tap <strong>📷 Scan</strong> to open the advanced barcode scanner.
       </div>
     </div>
 
   </div>
 
-  <!-- FULL SCREEN SCANNER -->
-  <div id="scannerContainer">
-    <div id="scannerHeader">
-      <span class="title" id="scannerTitle">Scan Barcode</span>
-      <button class="close-btn" id="scannerClose">✕</button>
-    </div>
-    <div id="scannerVideoWrapper">
-      <video id="scannerVideo" autoplay playsinline muted></video>
-      <div id="scannerOverlay">
-        <div id="scanRegion"></div>
-        <div id="scannerStatus">Position barcode in the center</div>
-        <div id="scannerMessage"></div>
+  <!-- ═══ ADVANCED FULL-SCREEN SCANNER ═══ -->
+  <div id="scannerOverlay">
+    <!-- Header -->
+    <div class="scanner-header">
+      <div class="title">
+        🔍 Scan Barcode
+        <span class="emp-code" id="scannerEmpCode"></span>
       </div>
+      <button class="scanner-close" id="scannerClose">✕</button>
     </div>
-    <div id="scannerControls">
-      <button class="btn" id="scannerFlash">💡 Flash</button>
+
+    <!-- Video -->
+    <div class="scanner-video-wrap">
+      <video id="scannerVideo" autoplay playsinline muted></video>
+      <canvas id="scannerCanvas" style="display:none;"></canvas>
+
+      <!-- Overlay UI -->
+      <div class="scanner-overlay-ui">
+        <div class="scan-region">
+          <span class="corner tl"></span>
+          <span class="corner tr"></span>
+          <span class="corner bl"></span>
+          <span class="corner br"></span>
+          <div class="scan-line"></div>
+        </div>
+        <div class="scanner-status-area">
+          <div class="scanner-status-text" id="scannerStatus">Position barcode in the center</div>
+        </div>
+      </div>
+
+      <!-- Floating message -->
+      <div class="scanner-message" id="scannerMessage"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="scanner-controls">
+      <button class="btn" id="scannerFlash">
+        <span class="icon">💡</span> Flash
+      </button>
       <div class="file-wrap">
-        <button class="btn">🖼️ Upload Image</button>
+        <button class="btn">
+          <span class="icon">🖼️</span> Image
+        </button>
         <input type="file" id="scannerImageInput" accept="image/*"/>
       </div>
-      <button class="btn" id="scannerScanNow">📸 Scan Frame</button>
+      <button class="btn btn-primary" id="scannerScanNow">
+        <span class="icon">📸</span> Scan Now
+      </button>
     </div>
   </div>
 
-  <!-- TOAST -->
+  <!-- ═══ TOAST ═══ -->
   <div id="toast"></div>
 
   <script>
-    // ── HELPER: Load external scripts sequentially ──
+    // ── Load external script helper ──
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -845,24 +1095,25 @@ function doPost(e) {
       });
     }
 
-    // ── LOAD html5-qrcode LIBRARY (for barcode fallback) ──
-    async function loadBarcodeLibrary() {
-      // Check if BarcodeDetector is supported natively
+    // ── Load html5-qrcode for fallback ──
+    async function loadBarcodeLib() {
       if ('BarcodeDetector' in window) {
-        console.log('✅ Native BarcodeDetector API is supported.');
+        console.log('✅ Native BarcodeDetector available.');
         return;
       }
-      console.log('⚠️ Native BarcodeDetector not supported. Loading html5-qrcode library...');
+      console.log('⚠️ Loading html5-qrcode fallback...');
       try {
         await loadScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js');
-        console.log('✅ html5-qrcode library loaded.');
+        console.log('✅ html5-qrcode loaded.');
       } catch (e) {
-        console.error('❌ Failed to load html5-qrcode library:', e);
+        console.error('❌ Failed to load html5-qrcode:', e);
       }
     }
-    loadBarcodeLibrary();
+    loadBarcodeLib();
 
-    // ── STATE ──
+    // ════════════════════════════════════════
+    // STATE
+    // ════════════════════════════════════════
     let workbookData = [];
     let selectedIndex = -1;
     let sheetUrl = '';
@@ -874,23 +1125,24 @@ function doPost(e) {
     let scanTargetIndex = -1;
     let lastDetectedText = '';
     let detectionCount = 0;
+    let frameCallbackId = null;
     const UKEY = 'bankQrUrl';
     const SNAMEKEY = 'bankQrSheetName';
 
-    // ── DOM ──
+    // ── DOM helpers ──
     const $ = id => document.getElementById(id);
 
-    // ── TOAST ──
-    let toastT;
+    // ── Toast ──
+    let toastTimer;
     function toast(msg, type = 'info') {
       const el = $('toast');
       el.textContent = msg;
       el.className = 'show ' + type;
-      clearTimeout(toastT);
-      toastT = setTimeout(() => el.classList.remove('show'), 4000);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
     }
 
-    // ── STATUS ──
+    // ── Status ──
     function setStatus(msg, type = 'info') {
       const icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
       const el = $('syncStatus');
@@ -910,20 +1162,22 @@ function doPost(e) {
     function setScannerStatus(msg, type = 'info') {
       const el = $('scannerStatus');
       el.textContent = msg;
-      el.style.color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#69db7c' : 'rgba(255,255,255,0.8)';
+      el.className = 'scanner-status-text' + (type === 'success' ? ' detected' : type === 'error' ? ' error' : '');
     }
 
     function showScannerMessage(msg, type = 'info') {
       const el = $('scannerMessage');
       el.textContent = msg;
-      el.className = 'show ' + type;
+      el.className = 'scanner-message show ' + type;
+      clearTimeout(el._hide);
+      el._hide = setTimeout(() => el.classList.remove('show'), 3000);
     }
 
     function hideScannerMessage() {
-      $('scannerMessage').className = '';
+      $('scannerMessage').className = 'scanner-message';
     }
 
-    // ── STATS ──
+    // ── Stats ──
     function updateStats() {
       const total = workbookData.length;
       const filled = workbookData.filter(r => r.account && r.account.trim()).length;
@@ -932,7 +1186,7 @@ function doPost(e) {
       $('stMissing').textContent = total - filled;
     }
 
-    // ── RENDER TABLE ──
+    // ── Render Table ──
     function renderTable() {
       const term = ($('searchInput').value || '').toLowerCase().trim();
       const rows = term ?
@@ -940,7 +1194,8 @@ function doPost(e) {
         workbookData;
 
       if (!rows.length) {
-        $('tableBody').innerHTML = `<tr class="tr-empty"><td colspan="6">${term ? 'No matches.' : 'No data loaded. Connect to Sheets.'}</td></tr>`;
+        $('tableBody').innerHTML =
+          `<tr class="tr-empty"><td colspan="6">${term ? 'No matches.' : 'No data loaded. Connect to Sheets.'}</td></tr>`;
       } else {
         $('tableBody').innerHTML = rows.map(row => {
           const ri = workbookData.indexOf(row);
@@ -979,7 +1234,7 @@ function doPost(e) {
       updateStats();
     }
 
-    // ── SELECT ROW ──
+    // ── Select Row ──
     function selectRow(idx) {
       selectedIndex = idx;
       renderTable();
@@ -995,7 +1250,7 @@ function doPost(e) {
       if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
-    // ── UPDATE ACCOUNT (local + immediate sync) ──
+    // ── Update Account (with robust error handling) ──
     async function updateAccountAndSync(val, autoNext = false) {
       val = String(val).trim();
       if (selectedIndex < 0) { toast('Select an employee first', 'error'); return false; }
@@ -1005,70 +1260,81 @@ function doPost(e) {
       const emp = workbookData[selectedIndex];
       const empCode = emp.empCode;
 
-      // Optimistically update UI
+      // Optimistic UI update
       emp.account = val;
       renderTable();
       setQrStatus(`⏳ Saving ${empCode} → ${val}...`, 'info');
 
-      // Sync to Google Sheets
       try {
-        const url = sheetUrl + (sheetName ? `?sheet=${encodeURIComponent(sheetName)}` : '');
+        // Build URL with sheet parameter
+        const url = sheetUrl + (sheetUrl.includes('?') ? '&' : '?') + `sheet=${encodeURIComponent(sheetName)}`;
+
         const response = await fetch(url, {
           method: 'POST',
           mode: 'cors',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ empCode, account: val })
         });
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            setQrStatus(`✅ Saved: ${empCode} → ${val}`, 'success');
-            setStatus(`Account synced to Google Sheets.`, 'success');
-            toast(`✅ ${empCode}: ${val} synced`, 'success');
-            if (autoNext) {
-              setTimeout(() => {
-                const next = workbookData.findIndex((r, i) => i > selectedIndex && (!r.account || !r.account.trim()));
-                if (next !== -1) selectRow(next);
-              }, 600);
-            }
-            return true;
-          } else {
-            throw new Error(result.error || 'Update failed');
-          }
-        } else {
-          throw new Error('HTTP ' + response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+
+        const result = await response.json();
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        if (result.success) {
+          setQrStatus(`✅ Saved: ${empCode} → ${val}`, 'success');
+          setStatus(`Account synced to Google Sheets.`, 'success');
+          toast(`✅ ${empCode}: ${val} synced`, 'success');
+
+          if (autoNext) {
+            setTimeout(() => {
+              const next = workbookData.findIndex((r, i) => i > selectedIndex && (!r.account || !r.account.trim()));
+              if (next !== -1) selectRow(next);
+            }, 600);
+          }
+          return true;
+        } else {
+          throw new Error(result.error || 'Unknown error from server');
+        }
+
       } catch (err) {
-        console.error(err);
-        // Rollback UI
-        emp.account = ''; // revert
+        console.error('Sync error:', err);
+        // Rollback
+        emp.account = '';
         renderTable();
-        setQrStatus('❌ Sync failed: ' + err.message, 'error');
-        toast('❌ Could not save to sheet', 'error');
+        const friendlyMsg = err.message.includes('Failed to fetch') ?
+          'Cannot reach Google Sheets. Check URL, sheet name, and internet connection.' :
+          err.message;
+        setQrStatus('❌ Sync failed: ' + friendlyMsg, 'error');
+        toast('❌ ' + friendlyMsg, 'error');
         return false;
       }
     }
 
-    // ───────────────────────────────────────────────────────────
-    //  HIGH-PERFORMANCE SCANNER
-    // ───────────────────────────────────────────────────────────
+    // ════════════════════════════════════════
+    // ADVANCED SCANNER ENGINE
+    // ════════════════════════════════════════
 
     async function openScanner(idx) {
       scanTargetIndex = (idx !== undefined) ? idx : selectedIndex;
       if (scanTargetIndex < 0) { toast('Select an employee first', 'error'); return; }
 
-      const container = $('scannerContainer');
-      container.classList.add('active');
+      const overlay = $('scannerOverlay');
+      overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
 
-      $('scannerTitle').textContent = `Scan for ${workbookData[scanTargetIndex].empCode}`;
+      const emp = workbookData[scanTargetIndex];
+      $('scannerEmpCode').textContent = `— ${emp.empCode}`;
       setScannerStatus('Starting camera...', 'info');
       hideScannerMessage();
 
-      // Stop any previous scanning
       stopScanner();
 
-      // Check for native BarcodeDetector support
+      // Check for native BarcodeDetector
       if ('BarcodeDetector' in window) {
         try {
           barcodeDetector = new BarcodeDetector({
@@ -1082,8 +1348,7 @@ function doPost(e) {
           await startNativeScanner();
           return;
         } catch (e) {
-          console.warn('⚠️ BarcodeDetector initialization failed:', e);
-          // Fall through to html5-qrcode
+          console.warn('⚠️ BarcodeDetector init failed:', e);
         }
       }
 
@@ -1094,12 +1359,11 @@ function doPost(e) {
         return;
       }
 
-      // No scanner available
-      setScannerStatus('❌ No barcode scanner available on this device.', 'error');
-      toast('Scanner not available. Please use a browser that supports BarcodeDetector (Chrome, Edge).', 'error');
+      setScannerStatus('❌ No scanner available on this browser.', 'error');
+      toast('Please use Chrome or Edge for best barcode scanning.', 'error');
     }
 
-    // ── NATIVE SCANNER (BarcodeDetector API) ──
+    // ── Native Scanner ──
     async function startNativeScanner() {
       const video = $('scannerVideo');
       const constraints = {
@@ -1113,26 +1377,24 @@ function doPost(e) {
         setScannerStatus('Scanning...', 'info');
         isScanning = true;
 
-        // Use requestVideoFrameCallback for low-latency frame capture
+        // Use requestVideoFrameCallback for low-latency
         if ('requestVideoFrameCallback' in video) {
           function scanFrame() {
             if (!isScanning) return;
             detectNativeFrame(video);
-            video.requestVideoFrameCallback(scanFrame);
+            frameCallbackId = video.requestVideoFrameCallback(scanFrame);
           }
           video.requestVideoFrameCallback(scanFrame);
         } else {
-          // Fallback to interval
           const interval = setInterval(() => {
             if (!isScanning) { clearInterval(interval); return; }
             detectNativeFrame(video);
-          }, 100);
+          }, 80);
         }
       } catch (err) {
         console.error('Native scanner error:', err);
         setScannerStatus('❌ Camera error: ' + err.message, 'error');
         toast('Camera access failed. Please allow camera permissions.', 'error');
-        // Try html5-qrcode as a fallback
         if (typeof Html5Qrcode !== 'undefined') {
           await startHtml5Scanner();
         }
@@ -1141,58 +1403,40 @@ function doPost(e) {
 
     async function detectNativeFrame(video) {
       if (video.readyState < 2 || video.videoWidth === 0) return;
-
       try {
         const results = await barcodeDetector.detect(video);
         if (results.length > 0) {
           const result = results[0];
           const text = result.rawValue;
-          // Show detected format
           const formatName = result.format || 'Barcode';
-          setScannerStatus(`✅ Detected: ${formatName}`, 'success');
+          setScannerStatus(`✅ ${formatName} detected`, 'success');
           handleScanned(text);
-        } else {
-          // Reset status if no barcode
-          if (!document.querySelector('#scannerMessage.show')) {
-            setScannerStatus('Position barcode in the center', 'info');
-          }
         }
-      } catch (e) {
-        // Silently ignore detection errors
-      }
+      } catch (e) { /* ignore */ }
     }
 
-    // ── HTML5-QRCODE SCANNER (Fallback) ──
+    // ── HTML5-QRCODE Fallback ──
     async function startHtml5Scanner() {
       const video = $('scannerVideo');
-      const container = $('scannerVideoWrapper');
-
       try {
         html5Scanner = new Html5Qrcode('scannerVideo');
-
         const config = {
-          fps: 15,
+          fps: 20,
           qrbox: { width: 250, height: 250 },
           aspectRatio: 1.0
         };
-
         await html5Scanner.start(
           { facingMode: 'environment' },
           config,
           (decodedText) => {
-            // Success callback
-            setScannerStatus('✅ Barcode detected!', 'success');
+            setScannerStatus('✅ Barcode detected', 'success');
             handleScanned(decodedText);
           },
-          (errorMessage) => {
-            // Ignore continuous errors
-          }
+          () => {}
         );
-
-        setScannerStatus('Scanning... (fallback mode)', 'info');
+        setScannerStatus('Scanning... (fallback)', 'info');
         isScanning = true;
         toast('Using fallback scanner. Detection may be slower.', 'info');
-
       } catch (err) {
         console.error('html5-qrcode error:', err);
         setScannerStatus('❌ Scanner error: ' + err.message, 'error');
@@ -1200,9 +1444,9 @@ function doPost(e) {
       }
     }
 
-    // ── HANDLE SCANNED DATA ──
+    // ── Handle Scanned Data ──
     function handleScanned(text) {
-      // Avoid duplicate rapid scans
+      // Debounce rapid duplicate scans
       if (text === lastDetectedText && detectionCount > 0) {
         detectionCount++;
         if (detectionCount < 3) return;
@@ -1213,10 +1457,8 @@ function doPost(e) {
       // Stop scanning immediately
       stopScanner();
 
-      // Close scanner after a brief delay to show the detected format
-      setTimeout(() => {
-        closeScanner();
-      }, 300);
+      // Close scanner after brief delay
+      setTimeout(() => closeScanner(), 400);
 
       // Extract account number
       let acc = '';
@@ -1254,51 +1496,48 @@ function doPost(e) {
       }
     }
 
-    // ── STOP SCANNER ──
+    // ── Stop Scanner ──
     function stopScanner() {
       isScanning = false;
-
+      if (frameCallbackId) {
+        const video = $('scannerVideo');
+        if (video && video.cancelVideoFrameCallback) {
+          video.cancelVideoFrameCallback(frameCallbackId);
+        }
+        frameCallbackId = null;
+      }
       if (html5Scanner) {
-        try {
-          html5Scanner.stop();
-          html5Scanner.clear();
-        } catch (e) { /* ignore */ }
+        try { html5Scanner.stop();
+          html5Scanner.clear(); } catch (e) {}
         html5Scanner = null;
       }
-
       if (mediaStream) {
         mediaStream.getTracks().forEach(t => t.stop());
         mediaStream = null;
       }
-
       const video = $('scannerVideo');
-      if (video) {
-        video.srcObject = null;
-        video.pause();
-      }
-
+      if (video) { video.srcObject = null;
+        video.pause(); }
       lastDetectedText = '';
       detectionCount = 0;
     }
 
-    // ── CLOSE SCANNER ──
+    // ── Close Scanner ──
     function closeScanner() {
       stopScanner();
-      $('scannerContainer').classList.remove('active');
+      $('scannerOverlay').classList.remove('active');
       document.body.style.overflow = '';
       setScannerStatus('', 'info');
       hideScannerMessage();
     }
 
-    // ── SCANNER IMAGE UPLOAD ──
+    // ── Image Upload Scan ──
     async function scanImageFile(file) {
       if (!file) return;
-
       try {
         const img = await createImageBitmap(file);
         let found = false;
 
-        // Try native BarcodeDetector first
         if ('BarcodeDetector' in window) {
           try {
             const detector = new BarcodeDetector({
@@ -1309,17 +1548,16 @@ function doPost(e) {
               handleScanned(results[0].rawValue);
               found = true;
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {}
         }
 
-        // Fallback: use html5-qrcode scanner for image
         if (!found && typeof Html5Qrcode !== 'undefined') {
           const tempScanner = new Html5Qrcode('dummy');
           try {
             const result = await tempScanner.scanFile(file, true);
             handleScanned(result);
             found = true;
-          } catch (e) { /* ignore */ }
+          } catch (e) {}
         }
 
         if (!found) {
@@ -1331,7 +1569,7 @@ function doPost(e) {
       }
     }
 
-    // ── MANUAL SCAN (scan current frame) ──
+    // ── Manual Scan Frame ──
     function manualScanFrame() {
       const video = $('scannerVideo');
       if (video.readyState >= 2 && video.videoWidth > 0) {
@@ -1339,14 +1577,14 @@ function doPost(e) {
           detectNativeFrame(video);
           toast('Scanning current frame...', 'info');
         } else if (html5Scanner) {
-          toast('Please use the auto-scanner or upload an image.', 'warn');
+          toast('Using auto-scanner or upload an image.', 'warn');
         }
       } else {
         toast('No video frame available.', 'error');
       }
     }
 
-    // ── FLASH TOGGLE ──
+    // ── Flash Toggle ──
     function toggleFlash() {
       if (!mediaStream) { toast('Camera not active', 'warn'); return; }
       const track = mediaStream.getVideoTracks()[0];
@@ -1359,9 +1597,9 @@ function doPost(e) {
       }
     }
 
-    // ───────────────────────────────────────────────────────────
-    //  GOOGLE SHEETS FETCH
-    // ───────────────────────────────────────────────────────────
+    // ════════════════════════════════════════
+    // GOOGLE SHEETS FETCH
+    // ════════════════════════════════════════
 
     async function fetchSheetData() {
       const url = $('sheetUrl').value.trim();
@@ -1380,7 +1618,7 @@ function doPost(e) {
           toast('No rows found.', 'warn');
           return;
         }
-        // Map data to our format
+
         const headers = result.headers || [];
         const findCol = (patterns) => {
           for (let p of patterns) {
@@ -1392,11 +1630,11 @@ function doPost(e) {
         const empIdx = findCol(['empcode', 'emp code', 'employee code', 'employee']);
         const nameIdx = findCol(['name', 'full name', 'employee name']);
         const mobileIdx = findCol(['mobile', 'phone', 'contact', 'cell']);
-        let accIdx = findCol(['account', 'acc no', 'account no', 'account number', 'accnumber', 'acc', 'a/c', 'bank acc', 'bank account', 'acct', 'bank']);
+        let accIdx = findCol(['account', 'acc no', 'account no', 'account number', 'accnumber', 'acc', 'a/c', 'bank']);
         if (accIdx === -1) {
           accIdx = headers.findIndex(h => {
             const low = h.toLowerCase();
-            return low.includes('acc') || low.includes('bank') || low.includes('acct') || low.includes('a/c');
+            return low.includes('acc') || low.includes('bank') || low.includes('acct');
           });
         }
         if (empIdx === -1) {
@@ -1416,7 +1654,6 @@ function doPost(e) {
 
         if (!workbookData.length) { setStatus('No valid rows found.', 'error'); return; }
 
-        // Save connection info
         sheetUrl = url;
         sheetName = sName;
         localStorage.setItem(UKEY, url);
@@ -1436,9 +1673,9 @@ function doPost(e) {
       }
     }
 
-    // ───────────────────────────────────────────────────────────
-    //  EVENT BINDINGS
-    // ───────────────────────────────────────────────────────────
+    // ════════════════════════════════════════
+    // EVENT BINDINGS
+    // ════════════════════════════════════════
 
     // Connect / fetch
     $('btnFetch').addEventListener('click', fetchSheetData);
@@ -1492,7 +1729,7 @@ function doPost(e) {
       a.textContent = b.classList.contains('open') ? '▲' : '▼';
     });
 
-    // ── RESTORE SAVED URL ──
+    // ── Restore saved URL ──
     function restoreSaved() {
       const u = localStorage.getItem(UKEY);
       const s = localStorage.getItem(SNAMEKEY) || 'Sheet1';
@@ -1503,12 +1740,14 @@ function doPost(e) {
       }
     }
 
-    // ── INIT ──
+    // ── Init ──
     restoreSaved();
     if (!workbookData.length) {
       setStatus('Connect to Google Sheets and fetch data.', 'info');
       $('syncStatus').style.display = 'none';
     }
+
+    console.log('✅ Advanced Barcode Scanner ready.');
   </script>
 </body>
 </html>
