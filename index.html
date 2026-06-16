@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Bank Account QR Updater</title>
-  <!-- FIXED: using cdnjs for reliability -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -56,20 +55,20 @@
     .sbar.error{background:var(--red-light);border-color:#f5b8b8;color:#8a1f1f}
     .sbar.info{background:var(--accent-light);border-color:#bfcbf7;color:#2c3ea8}
     .sbar.warn{background:var(--amber-light);border-color:#f5d98a;color:#7d5a00}
-    #camModal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+    #camModal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;display:none;align-items:center;justify-content:center;padding:12px}
     #camModal.open{display:flex}
     .cam-box{background:#0d0f18;border-radius:18px;overflow:hidden;width:100%;max-width:480px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.6)}
     .cam-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05)}
     .cam-header-title{color:#fff;font-size:14px;font-weight:600}
     .cam-close{background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
     .cam-close:hover{background:rgba(255,255,255,.2)}
-    .cam-video-wrap{position:relative;background:#000}
-    #camVideo{width:100%;display:block;max-height:360px;object-fit:cover}
+    .cam-video-wrap{position:relative;background:#000;min-height:240px;display:flex;align-items:center;justify-content:center}
+    #camVideo{width:100%;display:block;max-height:400px;object-fit:cover;background:#000;min-height:240px}
     .cam-overlay{position:absolute;inset:0;pointer-events:none}
     .cam-overlay svg{width:100%;height:100%}
-    .scan-label{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:12px;font-weight:500}
-    .cam-footer{padding:14px 18px;display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.04)}
-    #camStatus{color:rgba(255,255,255,.7);font-size:12px;flex:1}
+    .scan-label{position:absolute;bottom:12px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:12px;font-weight:500;pointer-events:none;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+    .cam-footer{padding:14px 18px;display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.04);flex-wrap:wrap}
+    #camStatus{color:rgba(255,255,255,.8);font-size:12px;flex:1;min-width:120px}
     #camCanvas{display:none}
     .perm-screen{padding:32px 24px;text-align:center;color:#fff;display:none}
     .perm-screen.show{display:block}
@@ -122,6 +121,14 @@
     .help-box strong{color:var(--accent)}
     .help-box .btn{font-size:11px;padding:4px 12px;margin-top:4px}
     .copy-url{background:rgba(255,255,255,.6);padding:4px 8px;border-radius:4px;font-family:var(--mono);font-size:10px;word-break:break-all}
+    .cam-status-msg{padding:6px 12px;border-radius:6px;font-size:12px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.9);display:inline-block;margin-top:4px}
+    .cam-status-msg.error{background:rgba(255,50,50,.2);color:#ff6b6b}
+    .cam-status-msg.success{background:rgba(50,255,50,.1);color:#69db7c}
+    .cam-status-msg.info{background:rgba(50,150,255,.15);color:#74c0fc}
+    #camVideoContainer{position:relative;background:#000;min-height:240px;display:flex;align-items:center;justify-content:center}
+    #camVideo{width:100%;display:block;max-height:400px;object-fit:cover;background:#000;min-height:240px}
+    .video-placeholder{position:absolute;color:rgba(255,255,255,.3);font-size:14px;pointer-events:none;text-align:center}
+    .video-placeholder .icon{font-size:40px;display:block;margin-bottom:8px}
   </style>
 </head>
 <body>
@@ -140,11 +147,11 @@
 <div id="camModal">
   <div class="cam-box">
     <div class="cam-header">
-      <div class="cam-header-title" id="camTitle">📷 Scan Barcode / QR</div>
+      <div class="cam-header-title" id="camTitle">📷 Scan QR Code</div>
       <button class="cam-close" id="btnCamClose">✕</button>
     </div>
 
-    <!-- Local server warning (insecure) -->
+    <!-- Local server warning -->
     <div class="perm-screen show" id="localWarning">
       <div class="perm-icon">📡</div>
       <div class="perm-title">Camera Unavailable</div>
@@ -163,41 +170,47 @@
       <input type="file" id="fallbackImageInput" accept="image/*" style="display:none" />
     </div>
 
-    <!-- Permission request screen (for HTTPS) -->
+    <!-- Permission request -->
     <div class="perm-screen" id="permScreen">
       <div class="perm-icon">📷</div>
       <div class="perm-title">Camera Permission Required</div>
-      <div class="perm-desc">Allow camera access to scan barcodes/QR codes.<br>Click the button below and allow when your browser asks.</div>
+      <div class="perm-desc">Allow camera access to scan QR codes.<br>Click the button below and allow when your browser asks.</div>
       <button class="btn btn-primary" id="btnRequestPerm">Allow Camera Access</button>
     </div>
 
     <!-- Live camera -->
     <div id="camLive" style="display:none">
       <div class="cam-video-wrap">
-        <video id="camVideo" autoplay playsinline muted></video>
-        <canvas id="camCanvas"></canvas>
-        <div class="cam-overlay">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs><mask id="hm"><rect width="100" height="100" fill="white"/><rect x="20" y="25" width="60" height="50" rx="3" fill="black"/></mask></defs>
-            <rect width="100" height="100" fill="rgba(0,0,0,0.45)" mask="url(#hm)"/>
-            <rect x="20" y="25" width="60" height="50" rx="3" fill="none" stroke="#3b5bdb" stroke-width=".8"/>
-            <polyline points="20,34 20,25 29,25" fill="none" stroke="#fff" stroke-width="1.5"/>
-            <polyline points="71,25 80,25 80,34" fill="none" stroke="#fff" stroke-width="1.5"/>
-            <polyline points="20,66 20,75 29,75" fill="none" stroke="#fff" stroke-width="1.5"/>
-            <polyline points="71,75 80,75 80,66" fill="none" stroke="#fff" stroke-width="1.5"/>
-            <line x1="21" y1="50" x2="79" y2="50" stroke="#3b5bdb" stroke-width=".6" opacity=".8">
-              <animateTransform attributeName="transform" type="translate" values="0,-24;0,24;0,-24" dur="2s" repeatCount="indefinite"/>
-            </line>
-          </svg>
-          <div class="scan-label">Point at barcode or QR code</div>
+        <div id="camVideoContainer">
+          <video id="camVideo" autoplay playsinline muted></video>
+          <div class="video-placeholder" id="videoPlaceholder">
+            <span class="icon">📷</span>
+            <span>Waiting for camera…</span>
+          </div>
+          <div class="cam-overlay">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs><mask id="hm"><rect width="100" height="100" fill="white"/><rect x="20" y="25" width="60" height="50" rx="3" fill="black"/></mask></defs>
+              <rect width="100" height="100" fill="rgba(0,0,0,0.45)" mask="url(#hm)"/>
+              <rect x="20" y="25" width="60" height="50" rx="3" fill="none" stroke="#3b5bdb" stroke-width=".8"/>
+              <polyline points="20,34 20,25 29,25" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <polyline points="71,25 80,25 80,34" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <polyline points="20,66 20,75 29,75" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <polyline points="71,75 80,75 80,66" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <line x1="21" y1="50" x2="79" y2="50" stroke="#3b5bdb" stroke-width=".6" opacity=".8">
+                <animateTransform attributeName="transform" type="translate" values="0,-24;0,24;0,-24" dur="2s" repeatCount="indefinite"/>
+              </line>
+            </svg>
+            <div class="scan-label">Position QR code inside the box</div>
+          </div>
         </div>
       </div>
       <div class="cam-footer">
-        <div id="camStatus">🔍 Scanning…</div>
+        <div id="camStatus">⏳ Starting camera…</div>
         <div class="file-wrap">
-          <button class="btn btn-ghost btn-sm">🖼️ Use Image</button>
+          <button class="btn btn-ghost btn-sm">🖼️ Upload Image</button>
           <input type="file" id="imgInput" accept="image/*"/>
         </div>
+        <button class="btn btn-ghost btn-sm" id="btnRetryCamera">↺ Retry</button>
       </div>
     </div>
 
@@ -228,7 +241,7 @@
       <div class="ph"><span>📂 Data Source</span></div>
       <div class="pb">
         <div class="local-note" id="localNote" style="display:none">
-          ⚠️ Camera may be blocked on this connection. Use <strong>“Scan Image”</strong> or set up HTTPS (see help below).
+          ⚠️ Camera may be blocked. Use <strong>“Scan Image”</strong> or set up HTTPS (see help below).
         </div>
         <div class="btn-row" style="margin-bottom:10px">
           <div class="file-wrap">
@@ -331,11 +344,6 @@
   return ContentService.createTextOutput(
     JSON.stringify({success:true,updated:updated})
   ).setMimeType(ContentService.MimeType.JSON);
-}
-function doGet(e){
-  return ContentService.createTextOutput(
-    JSON.stringify({status:"ok"})
-  ).setMimeType(ContentService.MimeType.JSON);
 }</pre>
           <p style="font-size:11px;color:var(--text3)">Column E = Account Number. Adjust index if different.</p>
         </div>
@@ -350,16 +358,16 @@ function doGet(e){
           <strong>To use the camera on your phone:</strong><br>
           You need <strong>HTTPS</strong>. Here are 3 ways:
           <ul style="margin:6px 0 0 16px;font-size:12px;line-height:1.6;">
-            <li><strong>ngrok</strong> – quick HTTPS tunnel. Run <code>ngrok http 8000</code> after starting a local server.</li>
-            <li><strong>GitHub Pages</strong> – upload this HTML to a repository and enable Pages.</li>
+            <li><strong>GitHub Pages</strong> – upload this HTML to a repo and enable Pages.</li>
             <li><strong>Netlify Drop</strong> – drag & drop the file to get a HTTPS URL instantly.</li>
+            <li><strong>ngrok</strong> – quick HTTPS tunnel for local testing.</li>
           </ul>
           <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-ghost btn-sm" id="btnCopyUrl">📋 Copy current URL</button>
             <span class="copy-url" id="currentUrlDisplay"></span>
           </div>
           <div style="margin-top:8px;font-size:11px;color:var(--text3);">
-            🔹 <strong>No camera?</strong> Use <strong>“Scan Image”</strong> – it works without HTTPS.
+            🔹 <strong>No camera?</strong> Use <strong>“Upload Image”</strong> – it works without HTTPS.
           </div>
         </div>
       </div>
@@ -410,6 +418,8 @@ let mediaStream = null;
 let scanInterval = null;
 let barcodeDetector = null;
 let scanTargetIndex = -1;
+let cameraStarted = false;
+let videoCheckInterval = null;
 const SKEY = 'bankQr_v3';
 const UKEY = 'bankQrUrl';
 
@@ -546,7 +556,7 @@ function updateAccount(val, autoNext=false) {
 }
 
 // ───────────────────────────────────────────────────────────
-//  CAMERA & IMAGE SCANNING
+//  CAMERA – FIXED for black screen issues
 // ───────────────────────────────────────────────────────────
 
 function showCamScreen(name) {
@@ -558,7 +568,7 @@ async function openCamera(idx) {
   scanTargetIndex = (idx !== undefined) ? idx : selectedIndex;
   if (scanTargetIndex < 0) { toast('Select an employee first','error'); return; }
   $('camModal').classList.add('open');
-  $('camTitle').textContent = `📷 Scan for: ${workbookData[scanTargetIndex].empCode}`;
+  $('camTitle').textContent = `📷 Scan: ${workbookData[scanTargetIndex].empCode}`;
   document.body.style.overflow='hidden';
 
   // Check if we're on a secure origin
@@ -581,7 +591,7 @@ async function openCamera(idx) {
       const perm = await navigator.permissions.query({name:'camera'});
       if (perm.state === 'denied') {
         showCamError('Camera Access Denied',
-          'You have blocked camera access for this page. To fix:\n• Click the 🔒 or 📷 icon in your browser address bar\n• Set Camera to "Allow"\n• Refresh the page and try again');
+          'You have blocked camera access for this page.\n• Tap the 🔒 or 📷 icon in the address bar\n• Set Camera to "Allow"\n• Refresh and try again');
         return;
       }
     } catch(e){ /* not all browsers support this */ }
@@ -594,18 +604,27 @@ async function openCamera(idx) {
 async function startCameraStream() {
   stopCameraStream();
   showCamScreen('permScreen');
+  cameraStarted = false;
 
-  const constraints = [
-    { video: { facingMode: 'environment', width:{ideal:1280}, height:{ideal:720} } },
+  // Reset video placeholder
+  const placeholder = $('videoPlaceholder');
+  if (placeholder) {
+    placeholder.querySelector('span:last-child').textContent = 'Requesting camera…';
+  }
+
+  // Try different constraints – some devices work better with different settings
+  const constraintSets = [
+    { video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } },
+    { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } },
     { video: { facingMode: 'environment' } },
-    { video: { width:{ideal:1280}, height:{ideal:720} } },
+    { video: { width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: true }
   ];
 
   let stream = null;
   let lastErr = null;
 
-  for (const c of constraints) {
+  for (const c of constraintSets) {
     try {
       stream = await navigator.mediaDevices.getUserMedia(c);
       break;
@@ -619,13 +638,13 @@ async function startCameraStream() {
     const err = lastErr;
     if (err && (err.name==='NotAllowedError'||err.name==='PermissionDeniedError')) {
       showCamError('Camera Permission Denied',
-        'Please allow camera access:\n• Click the camera/lock icon in your browser address bar\n• Choose "Allow" for camera\n• Then click Try Again');
+        'Please allow camera access:\n• Tap the camera/lock icon in the address bar\n• Choose "Allow" for camera\n• Then tap "Try Again"');
     } else if (err && err.name==='NotFoundError') {
       showCamError('No Camera Found',
-        'No camera was detected on this device.\nUse "Scan Image Instead" to upload a photo of the barcode.');
+        'No camera was detected on this device.\nUse "Scan Image Instead" to upload a photo of the QR code.');
     } else if (err && err.name==='NotReadableError') {
       showCamError('Camera Busy',
-        'Your camera is being used by another app.\nClose other apps or browser tabs using the camera, then try again.');
+        'Your camera is being used by another app.\nClose other apps using the camera, then try again.');
     } else {
       showCamError('Camera Error', (err&&err.message)||'Unknown error. Try "Scan Image Instead".');
     }
@@ -634,14 +653,120 @@ async function startCameraStream() {
 
   mediaStream = stream;
   showCamScreen('camLive');
-  $('camStatus').textContent = '🔍 Scanning…';
 
   const video = $('camVideo');
-  video.srcObject = stream;
-  video.play().catch(()=>{});
+  const placeholder2 = $('videoPlaceholder');
+  if (placeholder2) {
+    placeholder2.querySelector('span:last-child').textContent = 'Starting camera…';
+  }
 
-  video.addEventListener('loadedmetadata', startScanLoop, {once:true});
-  if (video.readyState >= 2) startScanLoop();
+  // Important: set srcObject BEFORE play
+  video.srcObject = stream;
+  video.muted = true;
+  video.playsInline = true;
+
+  // Add event listeners to detect when video actually starts
+  let videoStarted = false;
+
+  const onVideoReady = () => {
+    if (videoStarted) return;
+    videoStarted = true;
+    cameraStarted = true;
+    if (placeholder2) placeholder2.style.display = 'none';
+    $('camStatus').textContent = '🔍 Scanning for QR code…';
+    $('camStatus').className = 'cam-status-msg info';
+    // Start scanning loop
+    startScanLoop();
+  };
+
+  video.addEventListener('loadedmetadata', () => {
+    // Video metadata loaded – now check if it's actually playing
+    video.play().then(() => {
+      // Check if video has dimensions
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        onVideoReady();
+      } else {
+        // Wait a bit more
+        setTimeout(() => {
+          if (video.videoWidth > 0 && video.videoHeight > 0) {
+            onVideoReady();
+          } else {
+            // Try to force re-render
+            video.style.display = 'block';
+            setTimeout(() => {
+              if (video.videoWidth > 0 && video.videoHeight > 0) {
+                onVideoReady();
+              } else {
+                // Still black – try alternative
+                $('camStatus').textContent = '⚠️ Camera started but no video feed. Try retry or use image upload.';
+                $('camStatus').className = 'cam-status-msg error';
+                if (placeholder2) {
+                  placeholder2.querySelector('span:last-child').textContent = 'Camera on but no feed – tap Retry';
+                  placeholder2.style.display = 'block';
+                }
+              }
+            }, 500);
+          }
+        }, 500);
+      }
+    }).catch(err => {
+      console.warn('play() error:', err);
+      // Some browsers need user interaction to play
+      $('camStatus').textContent = '⚠️ Tap the video to start';
+      $('camStatus').className = 'cam-status-msg warn';
+      // Try to play on user tap
+      video.addEventListener('click', () => {
+        video.play().then(() => onVideoReady()).catch(()=>{});
+      }, {once:true});
+    });
+  });
+
+  // Fallback: if metadata doesn't fire, try to start anyway
+  setTimeout(() => {
+    if (!videoStarted && video.readyState >= 1) {
+      video.play().then(() => {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          onVideoReady();
+        }
+      }).catch(()=>{});
+    }
+  }, 1500);
+
+  // If video still hasn't started after 4s, show error
+  setTimeout(() => {
+    if (!videoStarted) {
+      $('camStatus').textContent = '⚠️ Camera failed to start. Use "Upload Image" instead.';
+      $('camStatus').className = 'cam-status-msg error';
+      if (placeholder2) {
+        placeholder2.querySelector('span:last-child').textContent = 'Camera not responding – try Upload Image';
+        placeholder2.style.display = 'block';
+      }
+    }
+  }, 5000);
+
+  // Hide placeholder once video shows data
+  video.addEventListener('loadeddata', () => {
+    if (video.videoWidth > 0 && video.videoHeight > 0) {
+      if (!videoStarted) onVideoReady();
+    }
+  });
+
+  // Also check periodically for video dimensions
+  if (videoCheckInterval) clearInterval(videoCheckInterval);
+  videoCheckInterval = setInterval(() => {
+    if (!videoStarted && video.videoWidth > 0 && video.videoHeight > 0) {
+      onVideoReady();
+      clearInterval(videoCheckInterval);
+      videoCheckInterval = null;
+    }
+  }, 300);
+
+  // Hide placeholder after 2s if video is playing
+  setTimeout(() => {
+    if (videoStarted && placeholder2) {
+      placeholder2.style.display = 'none';
+    }
+  }, 2000);
 }
 
 function startScanLoop() {
@@ -703,6 +828,7 @@ function handleScanned(text) {
   if (acc) {
     $('manualAccount').value = acc;
     updateAccount(acc, true);
+    toast(`✅ ${acc} saved for ${workbookData[selectedIndex]?.empCode || 'employee'}`, 'success');
   } else {
     toast(`QR scanned but no account found. Raw: ${text.substring(0,40)}`, 'error');
     setQrStatus('No account number in QR. Try manual entry.','warn');
@@ -712,15 +838,22 @@ function handleScanned(text) {
 
 function stopCameraStream() {
   if (scanInterval) { clearInterval(scanInterval); scanInterval=null; }
+  if (videoCheckInterval) { clearInterval(videoCheckInterval); videoCheckInterval=null; }
   if (mediaStream) { mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
   const v = $('camVideo');
   if (v) { v.srcObject=null; }
+  cameraStarted = false;
 }
 
 function closeCamModal() {
   stopCameraStream();
   $('camModal').classList.remove('open');
   document.body.style.overflow='';
+  const placeholder = $('videoPlaceholder');
+  if (placeholder) {
+    placeholder.style.display = 'block';
+    placeholder.querySelector('span:last-child').textContent = 'Waiting for camera…';
+  }
 }
 
 function showCamError(title, msg) {
@@ -745,7 +878,6 @@ function scanImageFile(file) {
       let found = false;
       let detectionError = null;
 
-      // Try BarcodeDetector
       if (window.BarcodeDetector) {
         try {
           const bd = barcodeDetector || new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13','ean_8','upc_a','upc_e','data_matrix','pdf417']});
@@ -757,7 +889,6 @@ function scanImageFile(file) {
         } catch(e){ detectionError = e; }
       }
 
-      // Try jsQR
       if (!found && window.jsQR) {
         try {
           const id = ctx.getImageData(0,0,canvas.width,canvas.height);
@@ -773,7 +904,7 @@ function scanImageFile(file) {
         closeCamModal();
         const msg = detectionError
           ? `Detection error: ${detectionError.message || detectionError}`
-          : 'No barcode/QR found in the image. Make sure the code is clearly visible and well-lit. Try cropping the image to focus on the code.';
+          : 'No QR code found in the image. Make sure the code is clearly visible and well-lit.';
         toast(msg, 'error');
         setQrStatus('No code found. '+msg, 'error');
       }
@@ -800,7 +931,6 @@ $('fileInput').addEventListener('change', e => {
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      // Check if XLSX is loaded
       if (typeof XLSX === 'undefined') {
         setStatus('XLSX library failed to load. Check internet connection.','error');
         toast('❌ XLSX library not loaded','error');
@@ -894,6 +1024,7 @@ $('btnOpenCam').addEventListener('click', ()=>openCamera(selectedIndex));
 $('btnCamClose').addEventListener('click', closeCamModal);
 $('btnRequestPerm').addEventListener('click', startCameraStream);
 $('btnRetry').addEventListener('click', startCameraStream);
+$('btnRetryCamera').addEventListener('click', startCameraStream);
 $('camModal').addEventListener('click', e=>{ if(e.target===$('camModal')) closeCamModal(); });
 
 // Local warning fallback buttons
@@ -1014,11 +1145,12 @@ if (stored) {
   } catch{}
 } else { setStatus('Load an Excel file to begin.','info'); }
 
-// Check if XLSX loaded
 if (typeof XLSX === 'undefined') {
-  setStatus('⚠️ XLSX library failed to load. Check your internet connection and refresh.','error');
+  setStatus('⚠️ XLSX library failed to load. Check your internet connection.','error');
   toast('XLSX library not loaded – Excel features unavailable','error');
 }
+
+console.log('✅ QR Updater with camera fixes ready');
 </script>
 </body>
 </html>
